@@ -1,9 +1,9 @@
-# BeeQuant Core platform_api
-Platform api is a GraphQL-based server-side application that interacts with a PostgreSQL database. This project is set up using Node.js and can be utilized as a starting point for building robust backend services.
+# Platform Api
+Platform Api is a GraphQL-based server-side application that interacts with a PostgreSQL database. This project is set up using Node.js and can be utilized as a starting point for building robust backend services.
 
 ## Environment setup
 
-Before you begin, make sure you have Node.js and Yarn package manager installed on your machine. You will also need PostgreSQL installed and running locally.
+Before you begin, make sure you have Node.js(v20.10) and Yarn package manager installed on your machine. You will also need PostgreSQL installed and running locally.
 
 Follow these steps to set up your environment:
 
