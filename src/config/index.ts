@@ -1,6 +1,7 @@
 import 'dotenv/config';
 
 interface Config {
+  DB_HOST?: string;
   DB_NAME?: string;
   DB_PORT?: string;
   DB_USERNAME?: string;
@@ -8,6 +9,7 @@ interface Config {
 }
 
 const config: Config = {
+  DB_HOST: process.env.DB_HOST,
   DB_NAME: process.env.DB_NAME,
   DB_PORT: process.env.DB_PORT,
   DB_USERNAME: process.env.DB_USERNAME,

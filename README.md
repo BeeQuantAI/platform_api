@@ -20,6 +20,7 @@ Follow these steps to set up your environment:
 4. Create a `.env` file in the root directory and add the following environment variables:
 
 ```sh
+DB_HOST=localhost
 DB_NAME=bqCore
 DB_PORT=5432
 DB_USERNAME=postgres
@@ -72,17 +73,22 @@ query GetUsers {
    ```
    docker pull postgres
    ```
-3. Run a PostgreSQL Container:
+3. create docker network: 
    ```
-   docker run --name bqCore -e POSTGRES_PASSWORD=CORE_ADMIN -e POSTGRES_DB=bqCore -p 5432:5432 -d postgres
+   docker network create platform_api
    ```
-4. Wait for the Container to Start and check the container's status:
+4. Run a PostgreSQL Container:
+   ```
+   docker run --name bqCore  --network platform_api -e POSTGRES_PASSWORD=CORE_ADMIN -e POSTGRES_DB=bqCore -p 5432:5432 -d postgres
+   ```
+
+5. Wait for the Container to Start and check the container's status:
 
    ```
    docker ps
    ```
 
-5. Download a DBeaver: https://dbeaver.io/download/, connect your db using DBeaver by using the following config:
+6. Download a DBeaver: https://dbeaver.io/download/, connect your db using DBeaver by using the following config:
    ```
    Host: localhost
    Port: 5432
@@ -91,9 +97,28 @@ query GetUsers {
    Password: CORE_ADMIN
    ```
 
-6 (optional). Stop and remove the container: (you need to run step 3 again once you remove it):
+7 (optional). Stop and remove the container: (you need to run step 3 again once you remove it):
+   ```
+   docker stop bqCore
+   docker rm bqCore
+   ```
 
-```
-docker stop bqCore
-docker rm bqCore
-```
+## To run the backend within the docker container:
+Follow these steps to get the backend up and running inside a Docker container.
+
+1. Pre-request: 
+Ensure the PostgreSQL docker container is running properly.
+
+2. build docker image: 
+Run the following command to build the Docker image for the platform API:
+   ```
+   docker build -t platform_api .
+   ```
+
+3. run docker
+Execute this command to run the Docker container in the background:
+   ```
+   docker run --name platform_api --network platform_api -p 3000:3000 -d platform_api
+   ```
+
+4. Navigate to `http://localhost:3000/graphql` in your web browser to test queries and mutations using the interactive GraphQL playground. 
