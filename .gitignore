@@ -39,3 +39,7 @@ schema.gql
 
 package-lock.json
 yarn.lock
+
+#docker-compose
+docker-compose.yaml
+/data
