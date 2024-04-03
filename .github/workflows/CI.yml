@@ -1,12 +1,9 @@
 name: CI pipeline
 on:
     workflow_dispatch:
-    push:
-        branches:
-            - main
     pull_request:
         branches:
-            - main
+            - dev
 jobs:
     test:
         runs-on: ubuntu-latest
@@ -16,8 +13,8 @@ jobs:
             - name: install dependencies
               run: yarn
             - name: unit tests
-              run: yarn run tets
-            - name: e2e tets
-              run: yarn run tets:e2e
+              run: yarn run tests
+            - name: e2e tests
+              run: yarn run tests:e2e
             - name: test coverage
               run: yarn run test:cov
