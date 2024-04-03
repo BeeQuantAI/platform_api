@@ -44,9 +44,6 @@ The project comes with pre-configured unit and end-to-end (e2e) tests. To run th
 # unit tests
 $ yarn run test
 
-# e2e tests
-$ yarn run test:e2e
-
 # test coverage
 $ yarn run test:cov
 ```
