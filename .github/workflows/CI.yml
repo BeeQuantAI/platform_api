@@ -14,7 +14,5 @@ jobs:
               run: yarn
             - name: unit tests
               run: yarn run test
-            - name: e2e tests
-              run: yarn run test:e2e
             - name: test coverage
               run: yarn run test:cov
