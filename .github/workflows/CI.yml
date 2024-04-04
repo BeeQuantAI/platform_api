@@ -13,7 +13,7 @@ jobs:
             - name: install dependencies
               run: yarn
             - name: unit tests
-              run: yarn run tests
+              run: yarn run test
             - name: e2e tests
               run: yarn run tests:e2e
             - name: test coverage
