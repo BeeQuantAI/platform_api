@@ -1,0 +1,16 @@
+name: CI pipeline
+on:
+    workflow_dispatch:
+    pull_request:
+        branches:
+            - 'dev'
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: checkout code
+              uses: actions/checkout@v4
+            - name: install dependencies
+              run: yarn
+            - name: unit tests
+              run: yarn run test
