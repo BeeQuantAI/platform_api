@@ -166,3 +166,36 @@ Follow these steps to get the backend up and running inside a Docker container.
    To completely shut down, run:
    ```
    docker compose down        # this will delete both containers
+
+## To deploy or update the backend to uat environment:(optional, BorisM version)
+This step will show you how to deploy the backend application to BorisM's cloud environment (approval from Chris and Boris required).
+
+The complete deployment involves operations in 2 different repos: platform_api and terraform_BorisM.
+The CD workflow in platform_api will only build docker image and push the image to aws ecr, you will need to go to the terraform repo to manually trigger the execution of terraform configurations.
+1. Go to Actions
+
+   In Actions page, you will see there are 3 pipelines: "CI pipeline", "uat deploy Boris" and "uat to Prod Boris".
+2. Go to workflow - Uat Deploy Boris
+
+   In this workflow, you should see there is a manual trigger, which will need you to put in software version number, remember this number because you will need it to double confirm in the terraform repo.
+   ![alt text](.github/workflows/images/readmeScreenshot-uatDeployWorkflow.png)
+3. Run the Uat Deploy Workflow
+
+   You don't need to run the CI workflow again because the deploy workflow will automatically do this for you.
+4. Go to terraform_BorisM repository - Actions
+
+   This repo contains the aws cloud infrastructure as code targeting to Boris' aws cloud account. You will see that there is only 1 workflow which is manually triggered as well. This workflow requires you type in environment (uat or prod, case sensitive) and version number. 
+   Once you put in the correct environment and version number, run the workflow. This will trigger the terraform configuration and the new version of application will be deploy or updated to aws cloud.
+   ![alt text](.github/workflows/images/readmeScreenshot-uatDeployterraformWorkflow.png)
+
+## To deploy or update the backend to prod environment:(optional, BorisM version)
+   This step will show you how to deploy or update the application from uat environment to production environment(approval from Chris and Boris required).
+
+   Note that you have to complete the uat deployment/update and finished testing in uat environment if you want to deploy in production environment.
+1. Run workflow - Uat to Prod Boris
+   
+   This workflow will pull the image that has been tested from the uat ecr repo, retag the image, then upload to the prod ecr repo.
+
+2. Go to terraform_BorisM repository - Actions
+
+   In this step you will use the same workflow that you used in the uat-deploy step. Type in "prod" as environment and the exact same version number from the uat deployment, then click run workflow.
