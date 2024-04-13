@@ -40,5 +40,5 @@ schema.gql
 package-lock.json
 
 #docker-compose
-docker-compose.yaml
+
 /data

@@ -1,15 +1,16 @@
 FROM node:alpine
 
+# Create app directory
 WORKDIR /app
 
-COPY package.json yarn.lock ./
+# Install app dependencies
+COPY yarn.lock package.json ./
+RUN yarn --immutable
 
-RUN yarn
-
+# run backend
 COPY . .
+RUN yarn run build
+
 
 EXPOSE 3000
-
-ENV DB_HOST=bqCore
-
-CMD ["yarn", "start"]
+CMD [ "yarn", "start" ]

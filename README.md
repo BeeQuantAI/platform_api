@@ -97,28 +97,46 @@ query GetUsers {
    Password: CORE_ADMIN
    ```
 
-7 (optional). Stop and remove the container: (you need to run step 3 again once you remove it):
+7. (optional). Stop and remove the container: (you need to run step 3 again once you remove it):
    ```
    docker stop bqCore
    docker rm bqCore
    ```
 
-## To run the backend within the docker container:
+## To run the backend within the docker container:(optional)
+This step will show you how to run backend application and the postgreSQL database in a docker network with a simple docker compose up.
+
+Remember, to successfully run the docker compose up command you will need to make sure your postgres container created by the last step is stopped,
+   ```
+   docker stop bqCore
+   ```
+and there are no other processes using localhost:5432. Alternatively you can change the port mapping though this wouldn't be recommended.
+
 Follow these steps to get the backend up and running inside a Docker container.
 
-1. Pre-request: 
-Ensure the PostgreSQL docker container is running properly.
-
-2. build docker image: 
-Run the following command to build the Docker image for the platform API:
+1. build backend docker container:
    ```
-   docker build -t platform_api .
+   docker compose build
    ```
 
-3. run docker
-Execute this command to run the Docker container in the background:
+2. docker compose up: 
+
+   as easy as:
    ```
-   docker run --name platform_api --network platform_api -p 3000:3000 -d platform_api
+   docker compose up
    ```
 
-4. Navigate to `http://localhost:3000/graphql` in your web browser to test queries and mutations using the interactive GraphQL playground. 
+   However, if you made any changes to your source code and you want to run the containers again then please make sure you run the "docker compose build" again. Otherwise your docker will decide to reuse the existing docker image which obviously won't have your latest changes.
+3. Navigate to `http://localhost:3000/graphql` in your web browser to test queries and mutations using the interactive GraphQL playground. 
+4. To temporarily stop the services, just simply run:
+   ```
+   docker compose stop        # this won't delete any containers
+   ```
+   and resume with:
+   ```
+   docker compose start
+   ```
+   To completely shut down, run:
+   ```
+   docker compose down        # this will delete both containers
+   ```
