@@ -73,13 +73,9 @@ query GetUsers {
    ```
    docker pull postgres
    ```
-3. create docker network: 
-   ```
-   docker network create platform_api
-   ```
 4. Run a PostgreSQL Container:
    ```
-   docker run --name bqCore  --network platform_api -e POSTGRES_PASSWORD=CORE_ADMIN -e POSTGRES_DB=bqCore -p 5432:5432 -d postgres
+   docker run --name bqCore -e POSTGRES_PASSWORD=CORE_ADMIN -e POSTGRES_DB=bqCore -p 5432:5432 -d postgres
    ```
 
 5. Wait for the Container to Start and check the container's status:
@@ -107,7 +103,16 @@ query GetUsers {
 Follow these steps to get the backend up and running inside a Docker container.
 
 1. Pre-request: 
+create docker network: 
+   ```
+   docker network create platform_api
+   ```
+
 Ensure the PostgreSQL docker container is running properly.
+follow the commands to run postgres container:
+   ```
+   docker run --name bqCore  --network platform_api -e POSTGRES_PASSWORD=CORE_ADMIN -e POSTGRES_DB=bqCore -p 5432:5432 -d postgres
+   ```
 
 2. build docker image: 
 Run the following command to build the Docker image for the platform API:
