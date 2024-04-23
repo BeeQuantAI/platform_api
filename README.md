@@ -73,22 +73,18 @@ query GetUsers {
    ```
    docker pull postgres
    ```
-3. create docker network: 
+3. Run a PostgreSQL Container:
    ```
-   docker network create platform_api
-   ```
-4. Run a PostgreSQL Container:
-   ```
-   docker run --name bqCore  --network platform_api -e POSTGRES_PASSWORD=CORE_ADMIN -e POSTGRES_DB=bqCore -p 5432:5432 -d postgres
+   docker run --name bqCore -e POSTGRES_PASSWORD=CORE_ADMIN -e POSTGRES_DB=bqCore -p 5432:5432 -d postgres
    ```
 
-5. Wait for the Container to Start and check the container's status:
+4. Wait for the Container to Start and check the container's status:
 
    ```
    docker ps
    ```
 
-6. Download a DBeaver: https://dbeaver.io/download/, connect your db using DBeaver by using the following config:
+5. Download a DBeaver: https://dbeaver.io/download/, connect your db using DBeaver by using the following config:
    ```
    Host: localhost
    Port: 5432
@@ -97,7 +93,7 @@ query GetUsers {
    Password: CORE_ADMIN
    ```
 
-7. (optional). Stop and remove the container: (you need to run step 3 again once you remove it):
+6. (optional). Stop and remove the container: (you need to run step 3 again once you remove it):
    ```
    docker stop bqCore
    docker rm bqCore
