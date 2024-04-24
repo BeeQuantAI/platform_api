@@ -1,0 +1,23 @@
+services:
+  beequantapi:
+    container_name: beequantapi
+    build: .
+    depends_on:
+      - bqCore-host
+    ports: 
+      - "3000:3000"
+    environment:
+      - DB_HOST=bqCore-host
+      - DB_NAME=bqCore
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=CORE_ADMIN
+      - JWT_SECRET=hello_beeQuant
+
+  bqCore-host:
+    image: postgres
+    ports: 
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=CORE_ADMIN
+      - POSTGRES_DB=bqCore
