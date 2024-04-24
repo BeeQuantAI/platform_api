@@ -73,18 +73,18 @@ query GetUsers {
    ```
    docker pull postgres
    ```
-4. Run a PostgreSQL Container:
+3. Run a PostgreSQL Container:
    ```
    docker run --name bqCore -e POSTGRES_PASSWORD=CORE_ADMIN -e POSTGRES_DB=bqCore -p 5432:5432 -d postgres
    ```
 
-5. Wait for the Container to Start and check the container's status:
+4. Wait for the Container to Start and check the container's status:
 
    ```
    docker ps
    ```
 
-6. Download a DBeaver: https://dbeaver.io/download/, connect your db using DBeaver by using the following config:
+5. Download a DBeaver: https://dbeaver.io/download/, connect your db using DBeaver by using the following config:
    ```
    Host: localhost
    Port: 5432
@@ -93,13 +93,13 @@ query GetUsers {
    Password: CORE_ADMIN
    ```
 
-7 (optional). Stop and remove the container: (you need to run step 3 again once you remove it):
+6. (optional) Stop and remove the container: (you need to run step 3 again once you remove it):
    ```
    docker stop bqCore
    docker rm bqCore
    ```
 
-## To run the backend within the docker container:
+## To run the backend within the docker container:(optional)
 Follow these steps to get the backend up and running inside a Docker container.
 
 1. Pre-request: 
@@ -108,8 +108,8 @@ create docker network:
    docker network create platform_api
    ```
 
-Ensure the PostgreSQL docker container is running properly.
-follow the commands to run postgres container:
+   Ensure the PostgreSQL docker container is running properly.
+   follow the commands to run postgres container:
    ```
    docker run --name bqCore  --network platform_api -e POSTGRES_PASSWORD=CORE_ADMIN -e POSTGRES_DB=bqCore -p 5432:5432 -d postgres
    ```
@@ -123,7 +123,44 @@ Run the following command to build the Docker image for the platform API:
 3. run docker
 Execute this command to run the Docker container in the background:
    ```
-   docker run --name platform_api --network platform_api -p 3000:3000 -d platform_api
+   docker run --name platform_api --network platform_api -e DB_HOST=bqCore -e DB_PORT=5432 -e DB_NAME=bqCore -e DB_USERNAME=postgres -e DB_PASSWORD=CORE_ADMIN -e JWT_SECRET=hello_beeQuant -p 3000:3000 -d platform_api
    ```
 
 4. Navigate to `http://localhost:3000/graphql` in your web browser to test queries and mutations using the interactive GraphQL playground. 
+
+## To run the backend with docker-compose:(optional)
+This step will show you how to run backend application and the postgreSQL database in a docker network with a simple docker compose up.
+
+Remember, to successfully run the docker compose up command you will need to make sure your postgres container created by the last step is stopped,
+   ```
+   docker stop bqCore
+   ```
+and there are no other processes using localhost:5432. Alternatively you can change the port mapping though this wouldn't be recommended.
+
+Follow these steps to get the backend up and running inside a Docker container.
+
+1. build backend docker container:
+   ```
+   docker compose build
+   ```
+
+2. docker compose up: 
+
+   as easy as:
+   ```
+   docker compose up
+   ```
+
+   However, if you made any changes to your source code and you want to run the containers again then please make sure you run the "docker compose build" again. Otherwise your docker will decide to reuse the existing docker image which obviously won't have your latest changes.
+3. Navigate to `http://localhost:3000/graphql` in your web browser to test queries and mutations using the interactive GraphQL playground. 
+4. To temporarily stop the services, just simply run:
+   ```
+   docker compose stop        # this won't delete any containers
+   ```
+   and resume with:
+   ```
+   docker compose start
+   ```
+   To completely shut down, run:
+   ```
+   docker compose down        # this will delete both containers
