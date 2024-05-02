@@ -26,6 +26,8 @@ DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=CORE_ADMIN
 JWT_SECRET=hello_beeQuant
+DEFAULT_REFERENCE=COREINTERNAL
+DEFAULT_DISPLAY_NAME='New User'
 ```
 
 Make sure to replace `CORE_ADMIN` with the actual password for your local PostgreSQL instance.
