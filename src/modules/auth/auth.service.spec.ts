@@ -6,8 +6,11 @@ import { User } from '../user/models/user.entity';
 import * as bcrypt from 'bcryptjs';
 import {
   ACCOUNT_EXIST,
+  ACCOUNT_NOT_EXIST,
+  LOGIN_ERROR,
   REGISTER_ERROR,
   SUCCESS,
+  UPDATE_PASSWORD_ERROR,
 } from '@/common/constants/code';
 
 describe('AuthService', () => {
@@ -24,6 +27,8 @@ describe('AuthService', () => {
           useValue: {
             findByEmail: jest.fn(),
             create: jest.fn(),
+            find: jest.fn(),
+            update: jest.fn(),
           },
         },
         {
@@ -151,6 +156,59 @@ describe('AuthService', () => {
 
       expect(result.code).toBe(REGISTER_ERROR);
       expect(result.message).toBe(expectedErrorMessage);
+    });
+  });
+
+  describe('change password', () => {
+    const mockContext = {
+      req: {
+        user: {
+          id: 'user-id',
+        }
+      },
+    };
+
+    it('should fail to change password if user does not exist', async () => {
+      jest.spyOn(userService, 'find').mockResolvedValue(null);
+      const result = await service.changePassword(mockContext, 'oldPass123!', 'newPass123!');
+      expect(result).toEqual({
+        code: ACCOUNT_NOT_EXIST,
+        message: "account doesn't exist",
+      });
+    });
+
+    it('should fail if current password is incorrect', async () => {
+      jest.spyOn(userService, 'find').mockResolvedValue({ id: 'user-id', password: 'hash' } as User);
+      jest.spyOn(bcrypt, 'compare' as any).mockResolvedValue(false);
+      const result = await service.changePassword(mockContext, 'oldPass123!', 'newPass123!');
+      expect(result).toEqual({
+        code: LOGIN_ERROR,
+        message: 'the current password is incorrect',
+      });
+    });
+
+    it('should successfully update password', async () => {
+      jest.spyOn(userService, 'find').mockResolvedValue({ id: 'user-id', password: 'hash' } as User);
+      jest.spyOn(bcrypt, 'compare' as any).mockResolvedValue(true);
+      jest.spyOn(bcrypt, 'hash' as any).mockResolvedValue('newHash');
+      jest.spyOn(userService, 'update').mockResolvedValue(true);
+      const result = await service.changePassword(mockContext, 'oldPass123!', 'newPass123!');
+      expect(result).toEqual({
+        code: SUCCESS,
+        message: 'password updated',
+      });
+    });
+  
+    it('should report an error if the password update fails', async () => {
+      jest.spyOn(userService, 'find').mockResolvedValue({ id: 'user-id', password: 'hash' } as User);
+      jest.spyOn(bcrypt, 'compare' as any).mockResolvedValue(true);
+      jest.spyOn(bcrypt, 'hash' as any).mockResolvedValue('newHash');
+      jest.spyOn(userService, 'update').mockResolvedValue(false);
+      const result = await service.changePassword(mockContext, 'oldPass123!', 'newPass123!');
+      expect(result).toEqual({
+        code: UPDATE_PASSWORD_ERROR,
+        message: 'password update failed',
+      });
     });
   });
 });

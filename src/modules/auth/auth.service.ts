@@ -13,6 +13,8 @@ import {
   LOGIN_ERROR,
   REGISTER_ERROR,
   SUCCESS,
+  UPDATE_PASSWORD_ERROR,
+  UNKNOWN_ERROR,
 } from '@/common/constants/code';
 
 @Injectable()
@@ -68,5 +70,47 @@ export class AuthService {
       code: REGISTER_ERROR,
       message: 'registration failed',
     };
+  }
+
+  async changePassword(
+    cxt: { req: Partial<Request> & { user: {id: string} } },
+    oldPassword: string,
+    newPassword: string
+  ): Promise<Result> {
+    try {
+      const id = cxt.req.user.id;
+      const user = await this.userService.find(id);
+      if (!user) {
+        return {
+          code: ACCOUNT_NOT_EXIST,
+          message: "account doesn't exist",
+        };
+      }
+      const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+      if (!isPasswordValid) {
+        return {
+          code: LOGIN_ERROR,
+          message: "the current password is incorrect",
+        };
+      }
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      const res = await this.userService.update(id, { password: hashedPassword });
+      if (res) {
+        return {
+          code: SUCCESS,
+          message: "password updated",
+        };
+      } else {
+        return {
+          code: UPDATE_PASSWORD_ERROR,
+          message: "password update failed",
+        };
+      }
+    } catch (error) {
+      return {
+        code: UNKNOWN_ERROR,
+        message: "an unexpected error occurred during password update",
+      };
+    }
   }
 }
