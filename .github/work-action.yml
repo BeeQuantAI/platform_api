@@ -2,7 +2,7 @@ name: Build and Dockerize
 
 on:
   push:
-    branches: [ver1]
+    branches: [dev]
 
 
 jobs:
