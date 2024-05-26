@@ -3,7 +3,7 @@ name: Push to AWS ECR
 on:
   push:
     branches:
-      - main
+      - dev
 
 env:
   AWS_REGION: 'us-east-1' # Set your AWS region here
