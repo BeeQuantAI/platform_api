@@ -52,6 +52,7 @@ jobs:
 
       - name: deploy
           run:|
+          
             aws ecs update-service --cluster my-cluster --service my-service --task-definition my-vpc
     
 
