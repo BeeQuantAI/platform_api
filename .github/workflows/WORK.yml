@@ -36,11 +36,13 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
- 
+      - name: Download existing task definition
+        run: aws ecs describe-task-definition --task-definition my-vpc > task-def.json
+
 
       - name: Deploy to ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           service: my-service
           cluster: my-cluster
-          task-definition: my-vpc
+          task-definition: task-def.json
