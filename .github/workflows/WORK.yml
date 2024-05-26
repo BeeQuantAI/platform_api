@@ -16,7 +16,7 @@ env:
   ECS_CLUSTER: my-cluster                # set this to your Amazon ECS cluster name
   ECS_TASK_DEFINITION: my-vpc # set this to the path to your Amazon ECS task definition
                                                # file, e.g. .aws/task-definition.json
-  CONTAINER_NAME: MY_CONTAINER_NAME           # set this to the name of the container in the
+  CONTAINER_NAME: container    # set this to the name of the container in the
 
 jobs:
   build-and-push:
@@ -43,6 +43,7 @@ jobs:
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
