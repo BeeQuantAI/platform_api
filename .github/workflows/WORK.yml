@@ -43,4 +43,4 @@ jobs:
         with:
           service: my-service
           cluster: my-cluster
-          task-definition: ${{ steps.task-def.outputs.my-vpc}}
+          task-definition: my-vpc
