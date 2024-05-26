@@ -36,13 +36,21 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      - name: Download existing task definition
-        run: aws ecs describe-task-definition --task-definition my-vpc > task-def.json
 
+      - name: Fill in the new image ID in the ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: my-vpc:1
+          container-name: repo # 请替换为您容器的实际名称
+          image: ${{ steps.login-ecr.outputs.registry }}/repo:latest
 
-      - name: Deploy to ECS
+      - name: Deploy Image to ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          service: my-service
-          cluster: my-cluster
-          task-definition: task-def.json
+          service: my-service  # 替换为您的服务名称
+          cluster: my-cluster  # 替换为您的集群名称
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+
+
+
