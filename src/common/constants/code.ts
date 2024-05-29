@@ -6,3 +6,5 @@ export const ACCOUNT_EXIST = 10004;
 export const REGISTER_ERROR = 10005;
 export const NOT_EMPTY = 10006;
 export const VALIDATE_ERROR = 10007;
+export const UPDATE_PASSWORD_ERROR = 10008;
+export const UNKNOWN_ERROR = 10009;
