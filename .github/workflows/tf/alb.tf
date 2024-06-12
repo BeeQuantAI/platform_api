@@ -5,58 +5,6 @@ resource "aws_lb" "ecs_alb" {
   subnets            = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
   security_groups    = [aws_security_group.alb_sg.id]
 }
-resource "aws_security_group" "app_sg" {
-  name        = "ecs-app-security-group"
-  description = "Security group for ECS application"
-  vpc_id      = aws_vpc.bqcore_vpc.id  # Ensure this is your correct VPC ID
-
-  # Inbound rules: Allow specific inbound traffic (adjust ports and protocols based on your app's needs)
-  ingress {
-    from_port   = 3000  # Example port that your application uses
-    to_port     = 3000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # Modify this if you want to restrict access to specific IP ranges
-  }
-
-  # Outbound rules: Allow all outbound traffic
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"  # -1 signifies all protocols
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "ECS Application Security Group"
-  }
-}
-resource "aws_security_group" "alb_sg" {
-  name        = "alb-security-group"
-  description = "Security group for the Application Load Balancer"
-  vpc_id      = aws_vpc.bqcore_vpc.id  # Ensure this is the correct VPC ID from your setup
-
-  # Inbound rules: Typically, allow HTTP and HTTPS traffic
-  ingress {
-    from_port   = 3000
-    to_port     = 3000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-
-  # Outbound rules: Allow all outbound traffic
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "ALB Security Group"
-  }
-}
-
 
 resource "aws_lb_target_group" "ecs_tg" {
   name     = "ecs-tg"
