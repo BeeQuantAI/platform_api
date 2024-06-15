@@ -22,7 +22,7 @@ import {
 export class AuthService {
   constructor(
     private userService: UserService,
-    private jwtService: JwtService,
+    private jwtService: JwtService
   ) {}
 
   async login(email: string, password: string): Promise<Result> {
@@ -74,7 +74,7 @@ export class AuthService {
   }
 
   async changePassword(
-    cxt: { req: Partial<Request> & {user: {id: string}} },
+    cxt: { req: Partial<Request> & { user: { id: string } } },
     input: UpdatePasswordInput
   ): Promise<Result> {
     try {
@@ -90,7 +90,7 @@ export class AuthService {
       if (!isPasswordValid) {
         return {
           code: LOGIN_ERROR,
-          message: "the current password is incorrect",
+          message: 'the current password is incorrect',
         };
       }
       const hashedPassword = await bcrypt.hash(input.newPassword, 10);
@@ -98,18 +98,18 @@ export class AuthService {
       if (res) {
         return {
           code: SUCCESS,
-          message: "password updated",
+          message: 'password updated',
         };
       } else {
         return {
           code: UPDATE_PASSWORD_ERROR,
-          message: "password update failed",
+          message: 'password update failed',
         };
       }
     } catch (error) {
       return {
         code: UNKNOWN_ERROR,
-        message: "an unexpected error occurred during password update",
+        message: 'an unexpected error occurred during password update',
       };
     }
   }

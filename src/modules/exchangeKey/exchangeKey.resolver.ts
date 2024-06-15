@@ -14,16 +14,14 @@ export class ExchangeKeyResolver {
   }
 
   @Mutation(() => Boolean, { description: 'Create exchange key' })
-  async createExchangeKey(
-    @Args('input') input: CreateExchangeKeyInput,
-  ): Promise<boolean> {
+  async createExchangeKey(@Args('input') input: CreateExchangeKeyInput): Promise<boolean> {
     return await this.exchangeKeyService.create(input);
   }
 
   @Mutation(() => Boolean, { description: 'Update exchange key info' })
   async updateExchangeKey(
     @Context() cxt: any,
-    @Args('input') input: UpdateExchangeKeyInput,
+    @Args('input') input: UpdateExchangeKeyInput
   ): Promise<boolean> {
     const id = cxt.req.user.id;
     return await this.exchangeKeyService.update(id, input);

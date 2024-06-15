@@ -10,11 +10,7 @@ export const userSchema = Joi.object({
     .default(process.env.DEFAULT_DISPLAY_NAME || 'New User')
     .label('Display Name'),
   email: Joi.string().email().required().empty('').label('Email'),
-  password: Joi.string()
-    .pattern(passwordPatten)
-    .required()
-    .empty('')
-    .label('Password'),
+  password: Joi.string().pattern(passwordPatten).required().empty('').label('Password'),
   ref: Joi.string()
     .empty('')
     .default(process.env.DEFAULT_REFERENCE || 'Default_Reference_Name'),

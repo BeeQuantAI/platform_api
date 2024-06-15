@@ -79,8 +79,6 @@ describe('userSchema', () => {
     });
 
     expect(result.error).toBeFalsy();
-    expect([envReference, 'Default_Reference_Name']).toContain(
-      result.value.ref,
-    );
+    expect([envReference, 'Default_Reference_Name']).toContain(result.value.ref);
   });
 });

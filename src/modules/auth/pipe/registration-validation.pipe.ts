@@ -22,9 +22,7 @@ export class ValidationPipe implements PipeTransform {
         error.details[0].message ===
         '"Display Name" with value "11" fails to match the required pattern: /^([a-zA-Z0-9-_]{4,15})?$/'
       ) {
-        throw new InvalidInputException(
-          '"Display Name" fails to match the required pattern'
-        );
+        throw new InvalidInputException('"Display Name" fails to match the required pattern');
       }
       throw new BadRequestException(error.details[0].message);
     }

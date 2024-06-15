@@ -10,10 +10,7 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
   }
 
   canActivate(context: ExecutionContext) {
-    const skipAuth = this.reflector.get<boolean>(
-      'skipAuth',
-      context.getHandler(),
-    );
+    const skipAuth = this.reflector.get<boolean>('skipAuth', context.getHandler());
 
     if (skipAuth) {
       return true;
