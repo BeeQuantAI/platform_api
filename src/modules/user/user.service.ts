@@ -7,14 +7,12 @@ import { User } from './models/user.entity';
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private userRepository: Repository<User>,
+    private userRepository: Repository<User>
   ) {}
 
   // create an user
   async create(entity: DeepPartial<User>): Promise<boolean> {
-    const res = await this.userRepository.save(
-      this.userRepository.create(entity),
-    );
+    const res = await this.userRepository.save(this.userRepository.create(entity));
     if (res) {
       return true;
     }

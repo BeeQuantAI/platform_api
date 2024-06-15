@@ -6,10 +6,7 @@ import { InvalidInputException } from '@/exceptions/invalid-input.exception';
 
 @Catch(EmptyFiledException, InvalidInputException)
 export class RegisterPipeErrorFilter implements ExceptionFilter {
-  catch(
-    exception: EmptyFiledException | InvalidInputException,
-    host: ArgumentsHost
-  ) {
+  catch(exception: EmptyFiledException | InvalidInputException, host: ArgumentsHost) {
     const gqlHost = GqlArgumentsHost.create(host);
     const ctx = gqlHost.getContext();
     const response = ctx.req.res;

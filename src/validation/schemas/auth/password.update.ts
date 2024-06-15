@@ -4,14 +4,6 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 export const passwordUpdateSchema = Joi.object({
-  oldPassword: Joi.string()
-    .pattern(passwordPatten)
-    .required()
-    .empty('')
-    .label('Old Password'),
-  newPassword: Joi.string()
-    .pattern(passwordPatten)
-    .required()
-    .empty('')
-    .label('New Password'),
+  oldPassword: Joi.string().pattern(passwordPatten).required().empty('').label('Old Password'),
+  newPassword: Joi.string().pattern(passwordPatten).required().empty('').label('New Password'),
 });

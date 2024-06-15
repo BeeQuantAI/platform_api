@@ -17,13 +17,7 @@ import { User } from '../user/models/user.entity';
     }),
     TypeOrmModule.forFeature([User]),
   ],
-  providers: [
-    ConsoleLogger,
-    AuthService,
-    AuthResolver,
-    UserService,
-    JwtStrategy,
-  ],
+  providers: [ConsoleLogger, AuthService, AuthResolver, UserService, JwtStrategy],
   exports: [],
 })
 export class AuthModule {}

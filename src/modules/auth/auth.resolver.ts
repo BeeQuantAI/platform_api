@@ -14,13 +14,10 @@ import { GqlAuthGuard } from '@/common/guards/auth.guard';
 
 @Resolver()
 export class AuthResolver {
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
   @Mutation(() => Result, { description: 'User login' })
-  async login(
-    @Args('email') email: string,
-    @Args('password') password: string,
-  ): Promise<Result> {
+  async login(@Args('email') email: string, @Args('password') password: string): Promise<Result> {
     return await this.authService.login(email, password);
   }
 
@@ -35,8 +32,8 @@ export class AuthResolver {
   @UseFilters(PasswordPipeErrorFilter)
   @UseGuards(GqlAuthGuard)
   async changePassword(
-    @Context() cxt: { req: Partial<Request> & {user: {id: string}} },
-    @Args('input', new PasswordValidationPipe(passwordUpdateSchema)) input: UpdatePasswordInput,
+    @Context() cxt: { req: Partial<Request> & { user: { id: string } } },
+    @Args('input', new PasswordValidationPipe(passwordUpdateSchema)) input: UpdatePasswordInput
   ): Promise<Result> {
     return await this.authService.changePassword(cxt, input);
   }

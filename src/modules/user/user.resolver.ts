@@ -42,7 +42,7 @@ export class UserResolver {
   @Mutation(() => Boolean, { description: 'Update user info' })
   async updateUser(
     @Args('id') id: string,
-    @Args('input') input: UpdateUserInput,
+    @Args('input') input: UpdateUserInput
   ): Promise<boolean> {
     return await this.userService.update(id, input);
   }
@@ -51,5 +51,4 @@ export class UserResolver {
   async deleteUser(@Args('id') id: string): Promise<boolean> {
     return await this.userService.del(id);
   }
-  
 }

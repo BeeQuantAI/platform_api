@@ -12,9 +12,7 @@
     "noImplicitAny": false,
     "outDir": "./dist",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
     "removeComments": true,
     "skipLibCheck": true,

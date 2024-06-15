@@ -62,7 +62,7 @@ describe('AuthService', () => {
       jest.spyOn(userService, 'findByEmail').mockResolvedValueOnce({
         id: 'a9868b30-51bd-4070-8dbb-043a56e21bcb',
         email: 'wethanw.001@gmail.com',
-        password: 'YourSecurePassword', 
+        password: 'YourSecurePassword',
       } as User);
 
       jest.spyOn(bcrypt, 'compare' as any).mockResolvedValueOnce(false);
@@ -74,10 +74,10 @@ describe('AuthService', () => {
     });
 
     it('should return token if login is successful', async () => {
-      jest.spyOn(userService, 'findByEmail').mockResolvedValueOnce({ 
+      jest.spyOn(userService, 'findByEmail').mockResolvedValueOnce({
         id: 'a9868b30-51bd-4070-8dbb-043a56e21bcb',
         email: 'wethanw.001@gmail.com',
-        password: 'YourSecurePassword', 
+        password: 'YourSecurePassword',
       } as User);
       jest.spyOn(bcrypt, 'compare' as any).mockResolvedValueOnce(true);
       jest.spyOn(jwtService, 'sign').mockReturnValue('token');
@@ -116,9 +116,7 @@ describe('AuthService', () => {
         displayName: 'Default_Display_Name',
         ref: 'Default_Ref_Value',
       };
-      (userService.findByEmail as jest.Mock).mockResolvedValueOnce(
-        existingUserInput,
-      );
+      (userService.findByEmail as jest.Mock).mockResolvedValueOnce(existingUserInput);
 
       const result = await service.register(existingUserInput);
 
@@ -164,7 +162,7 @@ describe('AuthService', () => {
       req: {
         user: {
           id: 'user-id',
-        }
+        },
       },
     };
 
@@ -183,7 +181,9 @@ describe('AuthService', () => {
     });
 
     it('should fail if current password is incorrect', async () => {
-      jest.spyOn(userService, 'find').mockResolvedValue({ id: 'user-id', password: 'hash' } as User);
+      jest
+        .spyOn(userService, 'find')
+        .mockResolvedValue({ id: 'user-id', password: 'hash' } as User);
       jest.spyOn(bcrypt, 'compare' as any).mockResolvedValue(false);
       const result = await service.changePassword(mockContext, updatePasswordInput);
       expect(result).toEqual({
@@ -193,7 +193,9 @@ describe('AuthService', () => {
     });
 
     it('should successfully update password', async () => {
-      jest.spyOn(userService, 'find').mockResolvedValue({ id: 'user-id', password: 'hash' } as User);
+      jest
+        .spyOn(userService, 'find')
+        .mockResolvedValue({ id: 'user-id', password: 'hash' } as User);
       jest.spyOn(bcrypt, 'compare' as any).mockResolvedValue(true);
       jest.spyOn(bcrypt, 'hash' as any).mockResolvedValue('newHash');
       jest.spyOn(userService, 'update').mockResolvedValue(true);
@@ -203,9 +205,11 @@ describe('AuthService', () => {
         message: 'password updated',
       });
     });
-  
+
     it('should report an error if the password update fails', async () => {
-      jest.spyOn(userService, 'find').mockResolvedValue({ id: 'user-id', password: 'hash' } as User);
+      jest
+        .spyOn(userService, 'find')
+        .mockResolvedValue({ id: 'user-id', password: 'hash' } as User);
       jest.spyOn(bcrypt, 'compare' as any).mockResolvedValue(true);
       jest.spyOn(bcrypt, 'hash' as any).mockResolvedValue('newHash');
       jest.spyOn(userService, 'update').mockResolvedValue(false);

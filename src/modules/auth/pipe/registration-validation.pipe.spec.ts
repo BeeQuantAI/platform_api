@@ -31,7 +31,7 @@ describe('ValidationPipe', () => {
       fail('Expected HttpException to be thrown');
     } catch (error) {
       expect(error.message).toEqual(
-        '"Display Name" with value "te" fails to match the required pattern: /^([a-zA-Z0-9-_]{4,15})?$/',
+        '"Display Name" with value "te" fails to match the required pattern: /^([a-zA-Z0-9-_]{4,15})?$/'
       );
       expect(error.getStatus()).toEqual(400);
     }

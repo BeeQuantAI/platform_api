@@ -28,9 +28,7 @@ export function createResult<T>(ItemType: ClassType<T>): ClassType<IResult<T>> {
   return Result;
 }
 
-export function createResults<T>(
-  ItemTypes: ClassType<T>,
-): ClassType<IResults<T>> {
+export function createResults<T>(ItemTypes: ClassType<T>): ClassType<IResults<T>> {
   @ObjectType()
   class Results {
     @Field(() => Int)

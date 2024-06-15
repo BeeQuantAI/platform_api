@@ -8,16 +8,12 @@ import * as ccxt from 'ccxt';
 export class ExchangeKeyService {
   constructor(
     @InjectRepository(ExchangeKey)
-    private ExchangeKeyRepository: Repository<ExchangeKey>,
+    private ExchangeKeyRepository: Repository<ExchangeKey>
   ) {}
 
   // create an exchange key
   async create(entity: DeepPartial<ExchangeKey>): Promise<boolean> {
-    const verify = this.verifyExchangeKey(
-      entity.exchangeName,
-      entity.accessKey,
-      entity.secretKey,
-    );
+    const verify = this.verifyExchangeKey(entity.exchangeName, entity.accessKey, entity.secretKey);
     if (!verify) {
       return false;
     }
@@ -28,11 +24,7 @@ export class ExchangeKeyService {
     return false;
   }
 
-  async verifyExchangeKey(
-    exchangeName: string,
-    apiKey: string,
-    secret: string,
-  ): Promise<boolean> {
+  async verifyExchangeKey(exchangeName: string, apiKey: string, secret: string): Promise<boolean> {
     try {
       // TODO Verify that the exchangeName is correct.
       const exchange = new ccxt[exchangeName]({
