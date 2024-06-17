@@ -6,8 +6,8 @@ on:
       - dev
 
 env:
-  AWS_REGION: 'us-east-1' # Set your AWS region here
-  ECR_REPOSITORY: 'repo'
+  AWS_REGION: 'us-east-2' # Set your AWS region here
+  ECR_REPOSITORY: 'test1'
   IMAGE_TAG: 'latest'
 
          # set this to your preferred AWS region, e.g. us-west-1
