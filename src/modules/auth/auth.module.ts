@@ -6,6 +6,7 @@ import { AuthResolver } from './auth.resolver';
 import { UserService } from '../user/user.service';
 import { JwtStrategy } from './jwt.strategy';
 import { User } from '../user/models/user.entity';
+import { EmailVerificationService } from './email.service';
 
 @Module({
   imports: [
@@ -17,7 +18,14 @@ import { User } from '../user/models/user.entity';
     }),
     TypeOrmModule.forFeature([User]),
   ],
-  providers: [ConsoleLogger, AuthService, AuthResolver, UserService, JwtStrategy],
+  providers: [
+    ConsoleLogger,
+    AuthService,
+    AuthResolver,
+    UserService,
+    JwtStrategy,
+    EmailVerificationService,
+  ],
   exports: [],
 })
 export class AuthModule {}

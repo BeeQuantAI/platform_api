@@ -28,6 +28,16 @@ export class AuthResolver {
     return await this.authService.register(input);
   }
 
+  @Mutation(() => Result, { description: 'Email Verification' })
+  async verifyEmail(
+    @Args('email') email: string,
+    @Args('token') token: string
+  ): Promise<Result> {
+    const result = await this.authService.verifyEmail(email, token);
+    return result;
+
+  }
+
   @Mutation(() => Result, { description: 'Change password' })
   @UseFilters(PasswordPipeErrorFilter)
   @UseGuards(GqlAuthGuard)

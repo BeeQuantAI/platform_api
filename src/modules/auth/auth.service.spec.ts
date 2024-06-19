@@ -2,10 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
+import { EmailVerificationService } from './email.service';
 import { User } from '../user/models/user.entity';
 import * as bcrypt from 'bcryptjs';
 import {
   ACCOUNT_EXIST,
+  ACCOUNT_NOT_VERIFIED,
   ACCOUNT_NOT_EXIST,
   LOGIN_ERROR,
   REGISTER_ERROR,
@@ -17,6 +19,7 @@ describe('AuthService', () => {
   let service: AuthService;
   let userService: UserService;
   let jwtService: JwtService;
+  let emailVerificationService: EmailVerificationService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -37,12 +40,22 @@ describe('AuthService', () => {
             sign: jest.fn(),
           },
         },
+        {
+          provide: EmailVerificationService,
+          useValue: {
+            generateVerificationToken: jest.fn(),
+            sendVerificationEmail: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
     userService = module.get<UserService>(UserService);
     jwtService = module.get<JwtService>(JwtService);
+    emailVerificationService = module.get<EmailVerificationService>(
+      EmailVerificationService
+    );
   });
 
   it('should be defined', () => {
@@ -78,6 +91,7 @@ describe('AuthService', () => {
         id: 'a9868b30-51bd-4070-8dbb-043a56e21bcb',
         email: 'wethanw.001@gmail.com',
         password: 'YourSecurePassword',
+        isEmailVerified: true,
       } as User);
       jest.spyOn(bcrypt, 'compare' as any).mockResolvedValueOnce(true);
       jest.spyOn(jwtService, 'sign').mockReturnValue('token');
@@ -86,6 +100,22 @@ describe('AuthService', () => {
         code: 200,
         message: 'login successful',
         data: 'token',
+      });
+    });
+
+    it('should login fail if email is not verified', async () => {
+      jest.spyOn(userService, 'findByEmail').mockResolvedValueOnce({
+        id: 'a9868b30-51bd-4070-8dbb-043a56e21bcb',
+        email: 'wethanw.001@gmail.com',
+        password: 'YourSecurePassword',
+      } as User);
+      jest.spyOn(bcrypt, 'compare' as any).mockResolvedValueOnce(true);
+      jest.spyOn(jwtService, 'sign').mockReturnValue('token');
+
+      expect(await service.login('test@example.com', 'password')).toEqual({
+        code: ACCOUNT_NOT_VERIFIED,
+        message:
+          'Email verification required. A new verification email will be sent shortly.',
       });
     });
   });
