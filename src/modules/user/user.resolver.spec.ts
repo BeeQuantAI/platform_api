@@ -63,4 +63,12 @@ describe('UserResolver', () => {
     });
     expect(userService.find).toHaveBeenCalledWith('1332332');
   });
+
+  it('should return null if user service does not find the user', async () => {
+    jest.spyOn(userService, 'find').mockImplementation(() => null);
+    const result = await resolver.getUserInfo(mockContext);
+    expect(result).toBeNull();
+    expect(userService.find).toHaveBeenCalledWith('1332332');
+  });
+
 });
