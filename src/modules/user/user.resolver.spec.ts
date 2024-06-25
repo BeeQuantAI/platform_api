@@ -4,7 +4,6 @@ import { UserService } from './user.service';
 import { GqlAuthGuard } from '@/common/guards/auth.guard';
 import { ExecutionContext, INestApplication } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { JwtService } from '@nestjs/jwt';
 
 describe('UserResolver', () => {
   let resolver: UserResolver;

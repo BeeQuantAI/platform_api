@@ -1,4 +1,4 @@
-import { Args, Context, GqlExecutionContext, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { CreateUserInput } from './dto/new-user.input';
 import { UserType } from './dto/user.type';
 import { UserService } from './user.service';
@@ -28,8 +28,8 @@ export class UserResolver {
 
   @Query(() => UserType, { description: 'Find user by context' })
   @UseGuards(GqlAuthGuard)
-  async getUserInfo(@Context() cxt: any): Promise<UserType> {
-    const id = cxt.req.user.id;
+  async getUserInfo(@Context() ctx: any): Promise<UserType> {
+    const id = ctx.req.user.id;
     return await this.userService.find(id);
   }
 
@@ -47,7 +47,7 @@ export class UserResolver {
     return await this.userService.update(id, input);
   }
 
-  @Mutation(() => Boolean, { description: 'Hard delete an user' })
+  @Mutation(() => Boolean, { description: 'Hard delete a user' })
   async deleteUser(@Args('id') id: string): Promise<boolean> {
     return await this.userService.del(id);
   }
