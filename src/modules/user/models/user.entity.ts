@@ -101,6 +101,13 @@ export class User extends CommonEntity {
   })
   captchaCreateAt: Date;
 
+  @Column({
+    comment: 'User timezone',
+    type: 'varchar',
+    default: 'UTC',
+  })
+  timezone: string;
+
   @OneToMany(() => ExchangeKey, (key) => key.user)
   keys: ExchangeKey[];
 }

@@ -11,6 +11,7 @@ import getConfig from './config';
 import { AuthModule } from './modules/auth/auth.module';
 import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from './global-exception.filter';
+import { TimezoneModule } from './timezone/timezone.module';
 
 @Module({
   imports: [
@@ -32,17 +33,16 @@ import { AllExceptionsFilter } from './global-exception.filter';
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: 'schema.gql',
-      formatError: (error) => {
-        const errorMessage = {
-          message: error.message,
-          path: error.path,
-        };
-        return errorMessage;
-      },
+      formatError: (error) => ({
+        message: error.message,
+        path: error.path,
+      }),
+      context: ({ req }) => ({ req }), 
     }),
     UserModule,
     AuthModule,
     ExchangeKeyModule,
+    TimezoneModule,
   ],
   controllers: [AppController],
   providers: [
