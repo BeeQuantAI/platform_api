@@ -10,7 +10,7 @@ env:
   ECR_REPOSITORY: 'test1'
   IMAGE_TAG: 'latest'
 
-         # set this to your preferred AWS region, e.g. us-west-1
+         # set this to your preferred AWS region, e.g. us-east-1
      # set this to your Amazon ECR repository name
   ECS_SERVICE: my-service                # set this to your Amazon ECS service name
   ECS_CLUSTER: my-cluster                # set this to your Amazon ECS cluster name
