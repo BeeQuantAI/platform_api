@@ -3,7 +3,7 @@ name: Push to AWS ECR
 on:
   push:
     branches:
-      - dev
+      - tf-test
 
 env:
   AWS_REGION: 'ap-southeast-2' # Set your AWS region here
