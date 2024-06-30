@@ -1,0 +1,37 @@
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: platform-api
+  # namespace: 1-example
+spec:
+  selector:
+    matchLabels:
+      app: platform-api
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: platform-api
+    spec:
+      containers:
+      - name: platform-api
+        image: 904484189421.dkr.ecr.us-east-1.amazonaws.com/test1:34fb18e9330786c59000b84953aec99e87aad4e8
+        ports:
+        ports:
+        - containerPort: 3000
+        env:
+        - name: DB_HOST
+          value: "terraform-2024061617415208630000000d.cjce0c82yelw.us-east-1.rds.amazonaws.com"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USERNAME
+          value: "postgres"
+        - name: DB_PASSWORD
+          value: "CORE_ADMIN"
+        - name: DB_NAME
+          value: "bq_Core"
+        - name: JWT_SECRET
+          value: "hello_beeQuant"
+---
