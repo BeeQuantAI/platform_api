@@ -1,33 +1,41 @@
-name: Terraform AWS Deployment
+name: Push to AWS ECR
 
 on:
   push:
     branches:
-      - tf-test
+      - dev
+
+env:
+  AWS_REGION: 'ap-southeast-2' # Set your AWS region here
+  ECR_REPOSITORY: 'test1'
+  IMAGE_TAG: 'latest'
+
+      
+     # set this to your Amazon ECR repository name
+  ECS_SERVICE: my-service                # set this to your Amazon ECS service name
+  ECS_CLUSTER: my-cluster                # set this to your Amazon ECS cluster name
+  ECS_TASK_DEFINITION: my-vpc # set this to the path to your Amazon ECS task definition
+                                               # file, e.g. .aws/task-definition.json
+  CONTAINER_NAME: container    # set this to the name of the container in the
 
 jobs:
-  terraform:
-    name: Terraform AWS Deployment
+  build-and-push:
     runs-on: ubuntu-latest
-
-    env:
-      AWS_REGION: ap-southeast-2
-      AWS_ACCESS_KEY_ID: AKIA2UC263WHSPMKCS44
-      AWS_SECRET_ACCESS_KEY: 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
-
+    
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-          
-      - name: Debug AWS CLI Configuration
-        run: |
-          aws configure list
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
