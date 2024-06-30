@@ -25,7 +25,10 @@ jobs:
           echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> $GITHUB_ENV
           aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-          aws configure set region $AWS_REGION
+          aws configure set region ap-southeast-2
+      - name: Debug AWS CLI Configuration
+        run: |
+          aws configure list
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
