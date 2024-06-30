@@ -7,7 +7,7 @@ on:
 
 jobs:
   terraform:
-    name: Terraform AWS Deployment
+    name: Terraform AWS  Deployment
     runs-on: ubuntu-latest
 
     env:
