@@ -3,7 +3,7 @@ name: Terraform AWS Deployment
 on:
   push:
     branches:
-      - tf-test  # 当 main 分支有推送时触发，可以根据需要更改触发条件
+      - tf-test
 
 jobs:
   terraform:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      AWS_REGION: ap-southeast-2  # 替换为你的 AWS 区域
+      AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
@@ -36,10 +36,13 @@ jobs:
         run: terraform init
 
       - name: Terraform Plan
-        run: terraform plan
+        run: |
+          terraform plan || exit 1
+          terraform show -json > tfplan.json
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
 
       - name: Terraform Show
         run: terraform show
+
