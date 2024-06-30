@@ -3,7 +3,7 @@ name: Terraform AWS Deployment
 on:
   push:
     branches:
-      - dev  # 当 main 分支有推送时触发，可以根据需要更改触发条件
+      - tf-test # 当 main 分支有推送时触发，可以根据需要更改触发条件
 
 jobs:
   terraform:
