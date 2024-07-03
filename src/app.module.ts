@@ -9,8 +9,6 @@ import { UserModule } from './modules/user/user.module';
 import { ExchangeKeyModule } from './modules/exchangeKey/exchangeKey.module';
 import getConfig from './config';
 import { AuthModule } from './modules/auth/auth.module';
-import { APP_FILTER } from '@nestjs/core';
-import { AllExceptionsFilter } from './global-exception.filter';
 
 @Module({
   imports: [
@@ -36,6 +34,7 @@ import { AllExceptionsFilter } from './global-exception.filter';
         const errorMessage = {
           message: error.message,
           path: error.path,
+          extensions: error.extensions,
         };
         return errorMessage;
       },
@@ -47,10 +46,6 @@ import { AllExceptionsFilter } from './global-exception.filter';
   controllers: [AppController],
   providers: [
     AppService,
-    {
-      provide: APP_FILTER,
-      useClass: AllExceptionsFilter,
-    },
   ],
 })
 export class AppModule {}
