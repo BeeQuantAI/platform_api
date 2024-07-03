@@ -34,8 +34,8 @@ export class UserResolver {
   }
 
   @SkipAuth()
-  @Mutation(() => Boolean, { description: 'Create new user' })
-  async createUser(@Args('input') input: CreateUserInput): Promise<boolean> {
+  @Mutation(() => String, { description: 'Create new user' })
+  async createUser(@Args('input') input: CreateUserInput): Promise<string> {
     return await this.userService.create(input);
   }
 

@@ -29,9 +29,17 @@ DB_PASSWORD=CORE_ADMIN
 JWT_SECRET=hello_beeQuant
 DEFAULT_REFERENCE=COREINTERNAL
 DEFAULT_DISPLAY_NAME='New User'
+GOOGLE_CLIENT_ID=GOOGLE_APP_CLIENT_ID
+GOOGLE_CLIENT_SECRET=GOOGLE_APP_CLIENT_SECRET
+FACEBOOK_APP_ID=FACEBOOK_APP_CLIENT_ID
+FACEBOOK_APP_SECRET=FACEBOOK_APP_CLIENT_SECRET
+OAUTH_REDIRECT_URI=http://localhost:5173/login
 ```
 
-Make sure to replace `CORE_ADMIN` with the actual password for your local PostgreSQL instance.
+#### Important:
+- Make sure to replace `CORE_ADMIN` with the actual password for your local PostgreSQL instance.
+- Replace `GOOGLE_APP_CLIENT_ID` and `GOOGLE_APP_CLIENT_SECRET` with your actual Google OAuth client ID and client secret.
+- Replace `FACEBOOK_APP_CLIENT_ID` and `FACEBOOK_APP_CLIENT_SECRET` with your actual Facebook app ID and app secret.
 
 ### Start Developing Work
 

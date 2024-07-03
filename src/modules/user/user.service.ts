@@ -11,12 +11,12 @@ export class UserService {
   ) {}
 
   // create an user
-  async create(entity: DeepPartial<User>): Promise<boolean> {
+  async create(entity: DeepPartial<User>): Promise<string> {
     const res = await this.userRepository.save(this.userRepository.create(entity));
     if (res) {
-      return true;
+      return res.id;
     }
-    return false;
+    return res.id;
   }
 
   // delete an user

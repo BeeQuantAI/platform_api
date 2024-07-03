@@ -5,8 +5,8 @@ import { CreateUserInput } from '../user/dto/new-user.input';
 import { UserService } from '../user/user.service';
 import { Result } from '@/common/dto/result.type';
 import { UpdatePasswordInput } from '../user/dto/update-password.input';
-import * as dotenv from 'dotenv';
-dotenv.config();
+import { ThirdPartyLoginUserInput } from '../user/dto/third-party-login-user.input';
+import { randomBytes } from 'crypto';
 
 import {
   ACCOUNT_EXIST,
@@ -112,5 +112,34 @@ export class AuthService {
         message: 'an unexpected error occurred during password update',
       };
     }
+  }
+
+  async loginWithThirdParty(user: ThirdPartyLoginUserInput): Promise<Result> {
+    const existingUser = await this.userService.findByEmail(user.email);
+    if (existingUser) {
+      const token = this.jwtService.sign({ id: existingUser.id });
+      return {
+        code: SUCCESS,
+        message: 'login successful',
+        data: token,
+      };
+    }
+    const newUserID = await this.userService.create({
+      email: user.email,
+      displayName: user.name,
+      password: randomBytes(16).toString('hex'),
+    });
+    if (newUserID) {
+      const token = this.jwtService.sign({ id: newUserID });
+      return {
+        code: SUCCESS,
+        message: 'login successful',
+        data: token,
+      };
+    }
+    return {
+      code: REGISTER_ERROR,
+      message: 'registration failed',
+    };    
   }
 }

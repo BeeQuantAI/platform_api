@@ -11,6 +11,7 @@ import getConfig from './config';
 import { AuthModule } from './modules/auth/auth.module';
 import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from './global-exception.filter';
+import { AuthController } from './modules/auth/auth.controller';
 
 @Module({
   imports: [
@@ -44,7 +45,7 @@ import { AllExceptionsFilter } from './global-exception.filter';
     AuthModule,
     ExchangeKeyModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, AuthController],
   providers: [
     AppService,
     {

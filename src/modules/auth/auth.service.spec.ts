@@ -220,4 +220,61 @@ describe('AuthService', () => {
       });
     });
   });
+
+  describe('loginWithThirdParty', () => {
+    it('should login an existing user', async () => {
+      const existingUser = { id: '123', email: 'test@example.com' } as User;
+      jest.spyOn(userService, 'findByEmail').mockResolvedValue(existingUser);
+      jest.spyOn(jwtService, 'sign').mockReturnValue('mockToken');
+
+      const result = await service.loginWithThirdParty({ email: 'test@example.com', name: 'Test User' });
+
+      expect(userService.findByEmail).toHaveBeenCalledWith('test@example.com');
+      expect(jwtService.sign).toHaveBeenCalledWith({ id: existingUser.id });
+      expect(result).toEqual({
+        code: SUCCESS,
+        message: 'login successful',
+        data: 'mockToken',
+      });
+    });
+
+    it('should register a new user and return a token', async () => {
+      jest.spyOn(userService, 'findByEmail').mockResolvedValue(null);
+      jest.spyOn(userService, 'create').mockResolvedValue('newUserID');
+      jest.spyOn(jwtService, 'sign').mockReturnValue('mockToken');
+
+      const result = await service.loginWithThirdParty({ email: 'new@example.com', name: 'New User' });
+
+      expect(userService.findByEmail).toHaveBeenCalledWith('new@example.com');
+      expect(userService.create).toHaveBeenCalledWith({
+        email: 'new@example.com',
+        displayName: 'New User',
+        password: expect.any(String),
+      });
+      expect(jwtService.sign).toHaveBeenCalledWith({ id: 'newUserID' });
+      expect(result).toEqual({
+        code: SUCCESS,
+        message: 'login successful',
+        data: 'mockToken',
+      });
+    });
+
+    it('should return an error if registration fails', async () => {
+      jest.spyOn(userService, 'findByEmail').mockResolvedValue(null);
+      jest.spyOn(userService, 'create').mockResolvedValue(null);
+
+      const result = await service.loginWithThirdParty({ email: 'fail@example.com', name: 'Fail User' });
+
+      expect(userService.findByEmail).toHaveBeenCalledWith('fail@example.com');
+      expect(userService.create).toHaveBeenCalledWith({
+        email: 'fail@example.com',
+        displayName: 'Fail User',
+        password: expect.any(String),
+      });
+      expect(result).toEqual({
+        code: REGISTER_ERROR,
+        message: 'registration failed',
+      });
+    });
+  });
 });
