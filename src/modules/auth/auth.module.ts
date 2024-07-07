@@ -1,12 +1,13 @@
 import { Module, ConsoleLogger } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { AuthResolver } from './auth.resolver';
 import { UserService } from '../user/user.service';
 import { JwtStrategy } from './jwt.strategy';
 import { User } from '../user/models/user.entity';
 import { EmailVerificationService } from './email.service';
+import { GqlAuthGuard } from '@/common/guards/auth.guard';
 
 @Module({
   imports: [
@@ -25,7 +26,9 @@ import { EmailVerificationService } from './email.service';
     UserService,
     JwtStrategy,
     EmailVerificationService,
+    GqlAuthGuard,
+    JwtService
   ],
-  exports: [],
+  exports: [AuthService],
 })
 export class AuthModule {}
