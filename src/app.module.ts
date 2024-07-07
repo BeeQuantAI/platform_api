@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
@@ -11,6 +11,7 @@ import getConfig from './config';
 import { AuthModule } from './modules/auth/auth.module';
 import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from './global-exception.filter';
+import * as cookieParser from 'cookie-parser';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { AllExceptionsFilter } from './global-exception.filter';
     ScheduleModule.forRoot(),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
+      context: ({ req, res }) => ({ req, res }), 
       autoSchemaFile: 'schema.gql',
       formatError: (error) => {
         const errorMessage = {
@@ -53,4 +55,8 @@ import { AllExceptionsFilter } from './global-exception.filter';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(cookieParser()).forRoutes('*'); 
+  }
+}

@@ -1,5 +1,5 @@
 import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
-import { UsePipes, UseFilters, UseGuards } from '@nestjs/common';
+import { UsePipes, UseFilters, UseGuards, Res } from '@nestjs/common';
 import { CreateUserInput } from '../user/dto/new-user.input';
 import { AuthService } from './auth.service';
 import { ValidationPipe } from '@/modules/auth/pipe/registration-validation.pipe';
@@ -11,14 +11,25 @@ import { UpdatePasswordInput } from '../user/dto/update-password.input';
 import { PasswordValidationPipe } from './pipe/password-validation.pipe';
 import { PasswordPipeErrorFilter } from './filter/password-pipe-error.filter';
 import { GqlAuthGuard } from '@/common/guards/auth.guard';
+import { Response } from 'express';
+
 
 @Resolver()
 export class AuthResolver {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Mutation(() => Result, { description: 'User login' })
-  async login(@Args('email') email: string, @Args('password') password: string): Promise<Result> {
-    return await this.authService.login(email, password);
+  async login(
+    @Args('email') email: string,
+    @Args('password') password: string,
+    @Args('stay_signed_in') stay_signed_in: boolean,
+    @Context() context: any
+  ): Promise<Result> {
+    const res: Response = context.res;
+    if (!res) {
+      throw new Error('Response object not found in context');
+    }
+    return await this.authService.login(email, password, stay_signed_in, res);
   }
 
   @Mutation(() => Result, { description: 'User register' })

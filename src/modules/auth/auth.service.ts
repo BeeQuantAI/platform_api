@@ -1,5 +1,6 @@
 import * as bcrypt from 'bcryptjs';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserInput } from '../user/dto/new-user.input';
 import { UserService } from '../user/user.service';
@@ -30,7 +31,12 @@ export class AuthService {
     private jwtService: JwtService
   ) {}
 
-  async login(email: string, password: string): Promise<Result> {
+  async login(
+    email: string,
+    password: string,
+    stay_signed_in: boolean,
+    @Res() res: Response,
+  ): Promise<Result> {
     const user = await this.userService.findByEmail(email);
     if (!user) {
       return {
@@ -40,6 +46,7 @@ export class AuthService {
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
+
     if (isPasswordValid) {
       const token = this.jwtService.sign({ id: user.id });
 
@@ -60,10 +67,31 @@ export class AuthService {
         };
       }
 
+      const accessToken = this.jwtService.sign(
+        { id: user.id },
+        { secret: process.env.JWT_SECRET, expiresIn: '12h' }
+      );
+
+      if (stay_signed_in) {
+        const refreshToken = this.jwtService.sign(
+          { id: user.id },
+          { secret: process.env.JWT_SECRET, expiresIn: '7d' }
+        );
+        await this.userService.update(user.id, { refreshToken });
+      } else {
+        await this.userService.update(user.id, { refreshToken: null });
+      }
+
+      res.cookie('access_token', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 12 * 60 * 60 * 1000,
+        sameSite: 'none',
+      });
+
       return {
         code: SUCCESS,
         message: 'login successful',
-        data: token,
       };
     }
     return {
@@ -183,6 +211,32 @@ export class AuthService {
       }
     }
   }
+  
+  async refreshAccessToken(userId: string): Promise<string | null> {
+    try {
+      const user = await this.userService.find(userId)
+
+      if (!user) return null
+
+      let newAccessToken;
+      const decodedRefreshToken = this.jwtService.verify(user.refreshToken, {
+        secret: process.env.JWT_SECRET
+      });
+
+      if (decodedRefreshToken && decodedRefreshToken.id) {
+        newAccessToken = this.jwtService.sign(
+          { id: userId },
+          { secret: process.env.JWT_SECRET, expiresIn: '12h' }
+        );
+      }
+
+      return newAccessToken;
+    } catch (error) {
+      console.error('Failed to refresh access token:', error);
+      return null;
+    }
+  }
+
   async changePassword(
     cxt: { req: Partial<Request> & { user: { id: string } } },
     input: UpdatePasswordInput
@@ -228,4 +282,9 @@ export class AuthService {
       };
     }
   }
+<<<<<<< HEAD
 }
+=======
+
+}
+>>>>>>> fc1d82e (backup)

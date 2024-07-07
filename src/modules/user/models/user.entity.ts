@@ -84,6 +84,12 @@ export class User extends CommonEntity {
   isActivated: boolean;
 
   @Column({
+    comment: 'refreshToken',
+    nullable: true,
+  })
+  refreshToken: string;
+
+  @Column({
     comment: 'Is account deleted',
     default: false,
   })
