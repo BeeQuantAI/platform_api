@@ -9,23 +9,25 @@ export class ValidationPipe implements PipeTransform {
 
   transform(value: any) {
     const { error, value: validatedValue } = this.schema.validate(value);
-
     if (error) {
-      if (
-        error.details[0].message === '"Email" is required' ||
-        error.details[0].message === '"Password" is required'
-      ) {
-        throw new EmptyFiledException(error.details[0].message);
-      }
-
-      if (
-        error.details[0].message ===
-        '"Display Name" with value "11" fails to match the required pattern: /^([a-zA-Z0-9-_]{4,15})?$/'
-      ) {
-        throw new InvalidInputException('"Display Name" fails to match the required pattern');
-      }
-      throw new BadRequestException(error.details[0].message);
+      const path = error.details[0].path[0];
+      const type = error.details[0].type;
+      const message = error.details[0].message;
+      this.errorMatcher(path, type, message);
     }
     return validatedValue;
+  }
+
+  private errorMatcher(path, type, message) {
+    switch (type) {
+      case 'string.pattern.base':
+        throw new InvalidInputException(message);
+      case 'any.required':
+        throw new EmptyFiledException(`"${path}" is required`);
+      case 'string.email':
+        throw new InvalidInputException(`"${path}" must be a valid email`);
+      default:
+        throw new BadRequestException(message);
+    }
   }
 }
