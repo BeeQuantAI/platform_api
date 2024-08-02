@@ -1,5 +1,4 @@
-import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
-import { GqlArgumentsHost } from '@nestjs/graphql';
+import { Catch, ExceptionFilter } from '@nestjs/common';
 import { NOT_EMPTY, VALIDATE_ERROR, UNKNOWN_ERROR } from '@/common/constants/code';
 import { EmptyFiledException } from '@/exceptions/empty-field.exception';
 import { InvalidInputException } from '@/exceptions/invalid-input.exception';
@@ -7,12 +6,9 @@ import { GraphQLError } from 'graphql';
 
 @Catch(EmptyFiledException, InvalidInputException)
 export class RegisterPipeErrorFilter implements ExceptionFilter {
-  catch(exception: EmptyFiledException | InvalidInputException, host: ArgumentsHost) {
-    const gqlHost = GqlArgumentsHost.create(host);
-    const ctx = gqlHost.getContext();
+  catch(exception: EmptyFiledException | InvalidInputException) {
     let errorCode: number;
     let errorMessage: string;
-
     switch (exception.constructor) {
       case EmptyFiledException:
         errorCode = NOT_EMPTY;

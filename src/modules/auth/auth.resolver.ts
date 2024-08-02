@@ -29,8 +29,8 @@ export class AuthResolver {
   }
 
   @Mutation(() => Result, { description: 'Change password' })
-  @UseFilters(PasswordPipeErrorFilter)
   @UseGuards(GqlAuthGuard)
+  @UseFilters(PasswordPipeErrorFilter)
   async changePassword(
     @Context() cxt: { req: Partial<Request> & { user: { id: string } } },
     @Args('input', new PasswordValidationPipe(passwordUpdateSchema)) input: UpdatePasswordInput

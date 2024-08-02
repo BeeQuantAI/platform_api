@@ -2,6 +2,7 @@ import { InvalidInputException } from './../../../exceptions/invalid-input.excep
 import { ValidationPipe } from './registration-validation.pipe';
 import { userSchema } from '../../../validation/schemas/auth/user.request';
 import { EmptyFiledException } from '@/exceptions/empty-field.exception';
+import { DisplayErrorMsgs, EmailErrorMsgs, PasswordErrorMsgs } from '@/common/utils/helpers';
 
 describe('ValidationPipe', () => {
   let pipe: ValidationPipe;
@@ -29,38 +30,54 @@ describe('ValidationPipe', () => {
   it('should throw EmptyFiledException if email is empty', () => {
     const value = { ...validData, email: '' };
     expect(() => pipe.transform(value)).toThrow(EmptyFiledException);
-    expect(() => pipe.transform(value)).toThrow('"email" is required');
+    expect(() => pipe.transform(value)).toThrow(EmailErrorMsgs.Required);
   });
 
   it('should throw EmptyFiledException if password is empty', () => {
     const value = { ...validData, password: '' };
     expect(() => pipe.transform(value)).toThrow(EmptyFiledException);
-    expect(() => pipe.transform(value)).toThrow('"password" is required');
+    expect(() => pipe.transform(value)).toThrow(PasswordErrorMsgs.Required);
   });
 
-  it('should throw InvalidInputException with customized error message if email is not valid', () => {
+  it('should throw InvalidInputException with invalid error message if email is not valid', () => {
     const value = { ...validData, email: '123' };
     expect(() => pipe.transform(value)).toThrow(InvalidInputException);
-    expect(() => pipe.transform(value)).toThrow('"email" must be a valid email');
+    expect(() => pipe.transform(value)).toThrow(EmailErrorMsgs.Invalid);
   });
 
-  it('should throw InvalidInputException with default error message if password is not valid', () => {
+  it('should throw InvalidInputException with invalid error message if password is not valid', () => {
+    const value = { ...validData, password: '123452362' };
+    expect(() => pipe.transform(value)).toThrow(InvalidInputException);
+    expect(() => pipe.transform(value)).toThrow(PasswordErrorMsgs.Invalid);
+  });
+
+  it('should throw InvalidInputException with invalid error message if displayName is not valid', () => {
+    const value = { ...validData, displayName: 'ab12!' };
+    expect(() => pipe.transform(value)).toThrow(InvalidInputException);
+    expect(() => pipe.transform(value)).toThrow(DisplayErrorMsgs.Invalid);
+  });
+
+  it('should throw InvalidInputException with minLength error message if password is too short', () => {
     const value = { ...validData, password: 'sh1' };
-    try {
-      expect(() => pipe.transform(value)).toThrow(InvalidInputException);
-    } catch (e) {
-      const message = e.message;
-      expect(() => pipe.transform(value)).toThrow(message);
-    }
+    expect(() => pipe.transform(value)).toThrow(InvalidInputException);
+    expect(() => pipe.transform(value)).toThrow(PasswordErrorMsgs.MinLength);
   });
 
-  it('should throw InvalidInputException with default error message if displayName is not valid', () => {
+  it('should throw InvalidInputException with maxLength error message if password is too long', () => {
+    const value = { ...validData, password: 'abcdefghigklmn0123456790qwer!@#$%' };
+    expect(() => pipe.transform(value)).toThrow(InvalidInputException);
+    expect(() => pipe.transform(value)).toThrow(PasswordErrorMsgs.MaxLength);
+  });
+
+  it('should throw InvalidInputException with minLength error message if displayName is not short', () => {
     const value = { ...validData, displayName: '22' };
-    try {
-      expect(() => pipe.transform(value)).toThrow(InvalidInputException);
-    } catch (e) {
-      const message = e.message;
-      expect(() => pipe.transform(value)).toThrow(message);
-    }
+    expect(() => pipe.transform(value)).toThrow(InvalidInputException);
+    expect(() => pipe.transform(value)).toThrow(DisplayErrorMsgs.MinLength);
+  });
+
+  it('should throw InvalidInputException with maxLength error message if displayName is not long', () => {
+    const value = { ...validData, displayName: 'seiseijia-australia' };
+    expect(() => pipe.transform(value)).toThrow(InvalidInputException);
+    expect(() => pipe.transform(value)).toThrow(DisplayErrorMsgs.MaxLength);
   });
 });
