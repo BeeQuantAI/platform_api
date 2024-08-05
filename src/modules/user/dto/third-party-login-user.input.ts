@@ -6,8 +6,10 @@ export class ThirdPartyLoginUserInput {
   id?: string;
   @Field({ description: 'Login email' })
   email: string;
-  @Field({ description: 'User name' })
-  name: string;
+  @Field({ description: 'User first name' })
+  firstName: string;
+  @Field({ description: 'User last name' })
+  lastName: string;
   @Field({ description: 'User profile picture', nullable: true })
   picture?: string;
   @Field({ description: 'Access Token', nullable: true })

@@ -1,5 +1,5 @@
 import * as bcrypt from 'bcryptjs';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserInput } from '../user/dto/new-user.input';
 import { UserService } from '../user/user.service';
@@ -20,6 +20,7 @@ import {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     private userService: UserService,
     private jwtService: JwtService
@@ -115,6 +116,7 @@ export class AuthService {
   }
 
   async loginWithThirdParty(user: ThirdPartyLoginUserInput): Promise<Result> {
+    this.logger.log(user);
     const existingUser = await this.userService.findByEmail(user.email);
     if (existingUser) {
       const token = this.jwtService.sign({ id: existingUser.id });
@@ -126,7 +128,7 @@ export class AuthService {
     }
     const newUserID = await this.userService.create({
       email: user.email,
-      displayName: user.name,
+      displayName: `${user.firstName} ${user.lastName}`,
       password: randomBytes(16).toString('hex'),
     });
     if (newUserID) {
@@ -140,6 +142,6 @@ export class AuthService {
     return {
       code: REGISTER_ERROR,
       message: 'registration failed',
-    };    
+    };
   }
 }

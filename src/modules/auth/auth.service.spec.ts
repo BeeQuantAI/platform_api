@@ -227,7 +227,10 @@ describe('AuthService', () => {
       jest.spyOn(userService, 'findByEmail').mockResolvedValue(existingUser);
       jest.spyOn(jwtService, 'sign').mockReturnValue('mockToken');
 
-      const result = await service.loginWithThirdParty({ email: 'test@example.com', name: 'Test User' });
+      const result = await service.loginWithThirdParty({
+        email: 'test@example.com',
+        name: 'Test User',
+      });
 
       expect(userService.findByEmail).toHaveBeenCalledWith('test@example.com');
       expect(jwtService.sign).toHaveBeenCalledWith({ id: existingUser.id });
@@ -243,7 +246,10 @@ describe('AuthService', () => {
       jest.spyOn(userService, 'create').mockResolvedValue('newUserID');
       jest.spyOn(jwtService, 'sign').mockReturnValue('mockToken');
 
-      const result = await service.loginWithThirdParty({ email: 'new@example.com', name: 'New User' });
+      const result = await service.loginWithThirdParty({
+        email: 'new@example.com',
+        name: 'New User',
+      });
 
       expect(userService.findByEmail).toHaveBeenCalledWith('new@example.com');
       expect(userService.create).toHaveBeenCalledWith({
@@ -263,7 +269,10 @@ describe('AuthService', () => {
       jest.spyOn(userService, 'findByEmail').mockResolvedValue(null);
       jest.spyOn(userService, 'create').mockResolvedValue(null);
 
-      const result = await service.loginWithThirdParty({ email: 'fail@example.com', name: 'Fail User' });
+      const result = await service.loginWithThirdParty({
+        email: 'fail@example.com',
+        name: 'Fail User',
+      });
 
       expect(userService.findByEmail).toHaveBeenCalledWith('fail@example.com');
       expect(userService.create).toHaveBeenCalledWith({

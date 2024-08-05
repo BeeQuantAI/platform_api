@@ -7,7 +7,7 @@ export class FacebookAuthGuard extends AuthGuard('facebook') {
   constructor() {
     super();
   }
-  
+
   getRequest(context: ExecutionContext) {
     const ctx = GqlExecutionContext.create(context);
     return ctx.getContext().req;

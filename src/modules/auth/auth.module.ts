@@ -9,6 +9,7 @@ import { User } from '../user/models/user.entity';
 import { PassportModule } from '@nestjs/passport';
 import { GoogleStrategy } from './google.strategy';
 import { FacebookStrategy } from './facebook.strategy';
+import { AuthController } from '@/modules/auth/auth.controller';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { FacebookStrategy } from './facebook.strategy';
       },
     }),
     TypeOrmModule.forFeature([User]),
-    PassportModule,
+    PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
   providers: [
     ConsoleLogger,
@@ -30,6 +31,7 @@ import { FacebookStrategy } from './facebook.strategy';
     GoogleStrategy,
     FacebookStrategy,
   ],
+  controllers: [AuthController],
   exports: [AuthService],
 })
 export class AuthModule {}

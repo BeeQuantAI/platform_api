@@ -37,6 +37,7 @@ OAUTH_REDIRECT_URI=http://localhost:5173/login
 ```
 
 #### Important:
+
 - Make sure to replace `CORE_ADMIN` with the actual password for your local PostgreSQL instance.
 - Replace `GOOGLE_APP_CLIENT_ID` and `GOOGLE_APP_CLIENT_SECRET` with your actual Google OAuth client ID and client secret.
 - Replace `FACEBOOK_APP_CLIENT_ID` and `FACEBOOK_APP_CLIENT_SECRET` with your actual Facebook app ID and app secret.

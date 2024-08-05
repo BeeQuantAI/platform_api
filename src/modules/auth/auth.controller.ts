@@ -8,27 +8,27 @@ import { Response } from 'express';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-    @Get('facebook')
-    @UseGuards(FacebookAuthGuard)
-    facebookLogin(@Res() res: Response) {}
+  @Get('facebook')
+  @UseGuards(FacebookAuthGuard)
+  facebookLogin(@Res() res: Response) {}
 
-    @Get('facebook/callback')
-    @UseGuards(FacebookAuthGuard)
-    async facebookCallback(@Req() req, @Res() res: Response) {
-        const result = await this.authService.loginWithThirdParty(req.user);
-        const token = result.data;
-        res.redirect(`${process.env.OAUTH_REDIRECT_URI}?token=${token}`);
-    }
+  @Get('facebook/callback')
+  @UseGuards(FacebookAuthGuard)
+  async facebookCallback(@Req() req, @Res() res: Response) {
+    const result = await this.authService.loginWithThirdParty(req.user);
+    const token = result.data;
+    res.redirect(`${process.env.OAUTH_REDIRECT_URI}?token=${token}`);
+  }
 
-    @Get('google')
-    @UseGuards(GoogleAuthGuard)
-    googleLogin() {}
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  googleLogin() {}
 
-    @Get('google/callback')
-    @UseGuards(GoogleAuthGuard)
-    async googleCallback(@Req() req, @Res() res: Response) {
-        const result = await this.authService.loginWithThirdParty(req.user);
-        const token = result.data;
-        res.redirect(`${process.env.OAUTH_REDIRECT_URI}?token=${token}`);
-    }
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  async googleCallback(@Req() req, @Res() res: Response) {
+    const result = await this.authService.loginWithThirdParty(req.user);
+    const token = result.data;
+    res.redirect(`${process.env.OAUTH_REDIRECT_URI}?token=${token}`);
+  }
 }
