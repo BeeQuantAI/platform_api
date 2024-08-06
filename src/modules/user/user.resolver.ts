@@ -3,7 +3,6 @@ import { CreateUserInput } from './dto/new-user.input';
 import { UserType } from './dto/user.type';
 import { UserService } from './user.service';
 import { UpdateUserInput } from './dto/update-user.input';
-import { SkipAuth } from '../auth/skip-auth.decorator';
 import { GqlAuthGuard } from '@/common/guards/auth.guard';
 import { UseGuards } from '@nestjs/common';
 
@@ -33,9 +32,8 @@ export class UserResolver {
     return await this.userService.find(id);
   }
 
-  @SkipAuth()
-  @Mutation(() => String, { description: 'Create new user' })
-  async createUser(@Args('input') input: CreateUserInput): Promise<string> {
+  @Mutation(() => Boolean, { description: 'Create new user' })
+  async createUser(@Args('input') input: CreateUserInput): Promise<boolean> {
     return await this.userService.create(input);
   }
 

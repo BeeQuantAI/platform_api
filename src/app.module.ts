@@ -9,9 +9,6 @@ import { UserModule } from './modules/user/user.module';
 import { ExchangeKeyModule } from './modules/exchangeKey/exchangeKey.module';
 import getConfig from './config';
 import { AuthModule } from './modules/auth/auth.module';
-import { APP_FILTER } from '@nestjs/core';
-import { AllExceptionsFilter } from './global-exception.filter';
-import { AuthController } from './modules/auth/auth.controller';
 
 @Module({
   imports: [
@@ -37,6 +34,7 @@ import { AuthController } from './modules/auth/auth.controller';
         const errorMessage = {
           message: error.message,
           path: error.path,
+          extensions: error.extensions,
         };
         return errorMessage;
       },
@@ -45,13 +43,7 @@ import { AuthController } from './modules/auth/auth.controller';
     AuthModule,
     ExchangeKeyModule,
   ],
-  controllers: [AppController, AuthController],
-  providers: [
-    AppService,
-    {
-      provide: APP_FILTER,
-      useClass: AllExceptionsFilter,
-    },
-  ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
