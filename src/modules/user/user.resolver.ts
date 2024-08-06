@@ -1,4 +1,4 @@
-import { Args, Context, GqlExecutionContext, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { CreateUserInput } from './dto/new-user.input';
 import { UserType } from './dto/user.type';
 import { UserService } from './user.service';
@@ -33,7 +33,7 @@ export class UserResolver {
   }
 
   @Mutation(() => Boolean, { description: 'Create new user' })
-  async createUser(@Args('input') input: CreateUserInput): Promise<boolean> {
+  async createUser(@Args('input') input: CreateUserInput): Promise<string> {
     return await this.userService.create(input);
   }
 

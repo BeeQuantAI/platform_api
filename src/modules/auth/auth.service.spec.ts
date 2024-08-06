@@ -229,7 +229,8 @@ describe('AuthService', () => {
 
       const result = await service.loginWithThirdParty({
         email: 'test@example.com',
-        name: 'Test User',
+        firstName: 'Test',
+        lastName: 'User',
       });
 
       expect(userService.findByEmail).toHaveBeenCalledWith('test@example.com');
@@ -248,7 +249,8 @@ describe('AuthService', () => {
 
       const result = await service.loginWithThirdParty({
         email: 'new@example.com',
-        name: 'New User',
+        firstName: 'New',
+        lastName: 'User',
       });
 
       expect(userService.findByEmail).toHaveBeenCalledWith('new@example.com');
@@ -271,7 +273,8 @@ describe('AuthService', () => {
 
       const result = await service.loginWithThirdParty({
         email: 'fail@example.com',
-        name: 'Fail User',
+        firstName: 'Fail',
+        lastName: 'User',
       });
 
       expect(userService.findByEmail).toHaveBeenCalledWith('fail@example.com');
