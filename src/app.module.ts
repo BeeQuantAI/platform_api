@@ -9,6 +9,8 @@ import { UserModule } from './modules/user/user.module';
 import { ExchangeKeyModule } from './modules/exchangeKey/exchangeKey.module';
 import getConfig from './config';
 import { AuthModule } from './modules/auth/auth.module';
+import { GqlHttpExceptionFilter } from '@/common/filters/error.exception.filter';
+import { APP_FILTER } from '@nestjs/core';
 import { ExchangeModule } from './modules/exchange/exchange.module';
 import { UserExchangeModule } from './modules/user-exchange/user-exchange.module';
 
@@ -40,6 +42,7 @@ import { UserExchangeModule } from './modules/user-exchange/user-exchange.module
         };
         return errorMessage;
       },
+      context: ({ req, res }) => ({ req, res }),
       includeStacktraceInErrorResponses: false,
     }),
     UserModule,
@@ -49,6 +52,12 @@ import { UserExchangeModule } from './modules/user-exchange/user-exchange.module
     UserExchangeModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: GqlHttpExceptionFilter,
+    },
+  ],
 })
 export class AppModule {}
