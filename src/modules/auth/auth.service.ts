@@ -8,9 +8,7 @@ import { EmailVerificationService } from './email.service';
 import { VERIFY_ERROR } from '@/common/constants/code';
 import { UpdatePasswordInput } from '../user/dto/update-password.input';
 import { ResetPasswordInput } from '../user/dto/reset-password.input';
-import * as dotenv from 'dotenv';
-dotenv.config();
-
+import { TokenService } from './token.service';
 import {
   ACCOUNT_EXIST,
   ACCOUNT_NOT_EXIST,
@@ -28,10 +26,11 @@ export class AuthService {
   constructor(
     private emailVerificationService: EmailVerificationService,
     private userService: UserService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private tokenService: TokenService
   ) {}
 
-  async login(email: string, password: string): Promise<Result> {
+  async login(email: string, password: string, isStaySignedIn: boolean): Promise<Result> {
     const user = await this.userService.findByEmail(email);
     if (!user) {
       return {
@@ -41,9 +40,8 @@ export class AuthService {
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (isPasswordValid) {
-      const token = this.jwtService.sign({ id: user.id });
 
+    if (isPasswordValid) {
       if (!user.isEmailVerified) {
         const verificationToken = this.emailVerificationService.generateVerificationToken(
           user.email
@@ -59,10 +57,17 @@ export class AuthService {
         };
       }
 
+      const periodOneDay = 1000 * 60 * 60 * 24;
+      const periodOneWeek = periodOneDay * 7;
+      const expiresFreshToken = isStaySignedIn ? periodOneWeek : periodOneDay;
+      const accessToken = this.jwtService.sign({ id: user.id }, { expiresIn: '1h' });
+      const refreshToken = this.jwtService.sign({ id: user.id }, { expiresIn: expiresFreshToken });
+      await this.userService.update(user.id, { refreshToken, accessToken });
+
       return {
         code: SUCCESS,
         message: 'login successful',
-        data: token,
+        data: accessToken,
       };
     }
     return {
@@ -172,6 +177,7 @@ export class AuthService {
       };
     }
   }
+
   async changePassword(
     cxt: { req: Partial<Request> & { user: { id: string } } },
     input: UpdatePasswordInput
@@ -306,5 +312,35 @@ export class AuthService {
         message: 'An unexpected error occurred during password reset.',
       };
     }
+  }
+
+  async generateAccessToken(id: string): Promise<string> {
+    const foundUser = await this.userService.find(id);
+    const refreshToken = foundUser.refreshToken;
+    let isRefreshTokenValid: boolean;
+    try {
+      this.jwtService.verify(refreshToken);
+      isRefreshTokenValid = true;
+    } catch (error) {
+      isRefreshTokenValid = false;
+    }
+    if (isRefreshTokenValid) {
+      let accessToken: string;
+      accessToken = this.jwtService.sign({ id: id }, { expiresIn: '1h' });
+      await this.userService.update(id, { accessToken });
+      return accessToken;
+    } else {
+      return '';
+    }
+  }
+
+  async revokeTokens(context: any): Promise<boolean> {
+    const req = context.req;
+    const { id } = await this.tokenService.processToken(req);
+    const updatedUser = await this.userService.update(id, {
+      refreshToken: null,
+      accessToken: null,
+    });
+    return !!updatedUser;
   }
 }

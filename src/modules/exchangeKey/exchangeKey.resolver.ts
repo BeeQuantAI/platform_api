@@ -1,8 +1,8 @@
-import { IResult } from './../../common/dto/result.type';
+import { IResult } from '@/common/dto/result.type';
 import { Args, Mutation, Resolver, Context, Query } from '@nestjs/graphql';
 import { ExchangeKeyService } from './exchangeKey.service';
 import { UseFilters, UseGuards } from '@nestjs/common';
-import { GqlAuthGuard } from '@/common/guards/auth.guard';
+import { CombinedAuthGuard } from '@/modules/auth/guards/combined-auth.guard';
 import { Result } from '@/common/dto/result.type';
 import { CreateExchangeKeyInput } from './dto/new-exchangeKey.input';
 import { ExchangeKeyValidationPipe } from './pipe/exchangeKey-validation.pipe';
@@ -16,7 +16,7 @@ import {
 import { ExchangeKeyType, ResultForExchangeKey } from './dto/exchangeKey.type';
 
 @Resolver()
-@UseGuards(GqlAuthGuard)
+@UseGuards(CombinedAuthGuard)
 @UseFilters(new ExchangeKeyPipeErrorFilter())
 export class ExchangeKeyResolver {
   constructor(private readonly exchangeKeyService: ExchangeKeyService) {}
