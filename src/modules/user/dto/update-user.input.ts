@@ -12,4 +12,8 @@ export class UpdateUserInput {
   password?: string;
   @Field({ description: 'Mobile number', nullable: true })
   mobile?: string;
+  @Field({ description: 'is Email Verified', nullable: true })
+  isEmailVerified?: boolean;
+  @Field({ description: 'Verification Token', nullable: true })
+  verificationToken?: string;
 }

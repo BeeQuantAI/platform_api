@@ -30,12 +30,18 @@ export class UserService {
 
   // update an user
   async update(id: string, entity: DeepPartial<User>): Promise<boolean> {
-    const res = await this.userRepository.update(id, entity);
-    console.log(res);
-    if (res.affected > 0) {
+    const found = await this.userRepository.findOne({
+      where: {
+        id,
+      },
+    });
+
+    this.userRepository.merge(found, entity);
+    const res = this.userRepository.save(found);
+
+    if (res) {
       return true;
     }
-    return false;
   }
 
   // get all users

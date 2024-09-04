@@ -101,6 +101,19 @@ export class User extends CommonEntity {
   })
   captchaCreateAt: Date;
 
+  @Column({
+    comment: 'Whether the email is verified or not',
+    default: false,
+    nullable: true,
+  })
+  isEmailVerified: boolean;
+
+  @Column({
+    comment: 'Verification Token',
+    nullable: true,
+  })
+  verificationToken: string;
+
   @OneToMany(() => ExchangeKey, (key) => key.user)
   keys: ExchangeKey[];
 }
