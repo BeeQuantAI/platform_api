@@ -2,21 +2,25 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
+import { EmailVerificationService } from './email.service';
 import { User } from '../user/models/user.entity';
 import * as bcrypt from 'bcryptjs';
 import {
   ACCOUNT_EXIST,
+  ACCOUNT_NOT_VERIFIED,
   ACCOUNT_NOT_EXIST,
   LOGIN_ERROR,
   REGISTER_ERROR,
   SUCCESS,
   UPDATE_PASSWORD_ERROR,
+  VERIFY_ERROR,
 } from '@/common/constants/code';
 
 describe('AuthService', () => {
   let service: AuthService;
   let userService: UserService;
   let jwtService: JwtService;
+  let emailVerificationService: EmailVerificationService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -35,6 +39,14 @@ describe('AuthService', () => {
           provide: JwtService,
           useValue: {
             sign: jest.fn(),
+            verify: jest.fn(),
+          },
+        },
+        {
+          provide: EmailVerificationService,
+          useValue: {
+            generateVerificationToken: jest.fn(),
+            sendVerificationEmail: jest.fn(),
           },
         },
       ],
@@ -43,6 +55,7 @@ describe('AuthService', () => {
     service = module.get<AuthService>(AuthService);
     userService = module.get<UserService>(UserService);
     jwtService = module.get<JwtService>(JwtService);
+    emailVerificationService = module.get<EmailVerificationService>(EmailVerificationService);
   });
 
   it('should be defined', () => {
@@ -78,6 +91,7 @@ describe('AuthService', () => {
         id: 'a9868b30-51bd-4070-8dbb-043a56e21bcb',
         email: 'wethanw.001@gmail.com',
         password: 'YourSecurePassword',
+        isEmailVerified: true,
       } as User);
       jest.spyOn(bcrypt, 'compare' as any).mockResolvedValueOnce(true);
       jest.spyOn(jwtService, 'sign').mockReturnValue('token');
@@ -86,6 +100,21 @@ describe('AuthService', () => {
         code: 200,
         message: 'login successful',
         data: 'token',
+      });
+    });
+
+    it('should login fail if email is not verified', async () => {
+      jest.spyOn(userService, 'findByEmail').mockResolvedValueOnce({
+        id: 'a9868b30-51bd-4070-8dbb-043a56e21bcb',
+        email: 'wethanw.001@gmail.com',
+        password: 'YourSecurePassword',
+      } as User);
+      jest.spyOn(bcrypt, 'compare' as any).mockResolvedValueOnce(true);
+      jest.spyOn(jwtService, 'sign').mockReturnValue('token');
+
+      expect(await service.login('test@example.com', 'password')).toEqual({
+        code: ACCOUNT_NOT_VERIFIED,
+        message: 'Email verification required. A new verification email will be sent shortly.',
       });
     });
   });
@@ -154,6 +183,71 @@ describe('AuthService', () => {
 
       expect(result.code).toBe(REGISTER_ERROR);
       expect(result.message).toBe(expectedErrorMessage);
+    });
+  });
+
+  describe('verifyEmail', () => {
+    it('should return error if user not found', async () => {
+      jest.spyOn(userService, 'findByEmail').mockResolvedValue(null);
+
+      const result = await service.verifyEmail('test@example.com', 'token');
+
+      expect(result).toEqual({ code: VERIFY_ERROR, message: 'User not found' });
+    });
+
+    it('should return success if email is already verified', async () => {
+      jest.spyOn(userService, 'findByEmail').mockResolvedValue({ isEmailVerified: true } as User);
+
+      const result = await service.verifyEmail('test@example.com', 'token');
+
+      expect(result).toEqual({
+        code: VERIFY_ERROR,
+        message: 'Email is already verified, please login',
+      });
+    });
+
+    it('should send new verification email if token is expired', async () => {
+      jest.spyOn(userService, 'findByEmail').mockResolvedValue({
+        id: '1',
+        email: 'test@example.com',
+        isEmailVerified: false,
+      } as User);
+      jest.spyOn(jwtService, 'verify').mockImplementation(() => {
+        throw { name: 'TokenExpiredError' };
+      });
+      jest
+        .spyOn(emailVerificationService, 'generateVerificationToken')
+        .mockReturnValue('new-token');
+      jest.spyOn(userService, 'update').mockResolvedValue(true);
+
+      const result = await service.verifyEmail('test@example.com', 'expired-token');
+
+      expect(emailVerificationService.generateVerificationToken).toHaveBeenCalled();
+      expect(userService.update).toHaveBeenCalled();
+      expect(emailVerificationService.sendVerificationEmail).toHaveBeenCalled();
+      expect(result).toEqual({
+        code: VERIFY_ERROR,
+        message: 'Verify link expired',
+      });
+    });
+
+    it('should verify email successfully', async () => {
+      jest.spyOn(userService, 'findByEmail').mockResolvedValue({
+        id: '1',
+        email: 'test@example.com',
+        isEmailVerified: false,
+        verificationToken: 'valid-token',
+      } as User);
+      jest.spyOn(jwtService, 'verify').mockImplementation(() => ({}));
+      jest.spyOn(userService, 'update').mockResolvedValue(true);
+
+      const result = await service.verifyEmail('test@example.com', 'valid-token');
+
+      expect(userService.update).toHaveBeenCalledWith('1', {
+        isEmailVerified: true,
+        verificationToken: null,
+      });
+      expect(result).toEqual({ code: 200, message: 'Verification successful, please login' });
     });
   });
 

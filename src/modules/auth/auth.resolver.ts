@@ -10,6 +10,8 @@ import { passwordUpdateSchema } from '@/validation/schemas/auth/password.update'
 import { UpdatePasswordInput } from '../user/dto/update-password.input';
 import { PasswordValidationPipe } from './pipe/password-validation.pipe';
 import { PasswordPipeErrorFilter } from './filter/password-pipe-error.filter';
+import { emailSchema } from '@/common/utils/helpers';
+import { EmailValidationPipe } from './pipe/email-validation.pipe';
 import { GqlAuthGuard } from '@/common/guards/auth.guard';
 
 @Resolver()
@@ -26,6 +28,14 @@ export class AuthResolver {
   @UseFilters(RegisterPipeErrorFilter)
   async register(@Args('input') input: CreateUserInput): Promise<Result> {
     return await this.authService.register(input);
+  }
+
+  @Mutation(() => Result, { description: 'Email Verification' })
+  async verifyEmail(
+    @Args('email', new EmailValidationPipe(emailSchema)) email: string,
+    @Args('token') token: string
+  ): Promise<Result> {
+    return await this.authService.verifyEmail(email, token);
   }
 
   @Mutation(() => Result, { description: 'Change password' })

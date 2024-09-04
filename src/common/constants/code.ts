@@ -8,3 +8,5 @@ export const NOT_EMPTY = 10006;
 export const VALIDATE_ERROR = 10007;
 export const UPDATE_PASSWORD_ERROR = 10008;
 export const UNKNOWN_ERROR = 10009;
+export const ACCOUNT_NOT_VERIFIED = 10010;
+export const VERIFY_ERROR = 10011;
