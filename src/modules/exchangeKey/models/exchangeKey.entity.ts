@@ -1,40 +1,30 @@
 import { CommonEntity } from '@/common/entities/common.entity';
-import { User } from '@/modules/user/models/user.entity';
+import { UserExchange } from '@/modules/user-exchange/models/user-exchange.entity';
 import { IsNotEmpty } from 'class-validator';
-import { Column, Entity, Index, ManyToOne } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 
 @Entity('PortalUserKey')
-@Index(['accessKey', 'secretKey'], { unique: true })
 export class ExchangeKey extends CommonEntity {
   @Column({
-    comment: 'Exchange name',
-    default: '',
+    comment: 'Access key',
   })
   @IsNotEmpty()
-  exchangeName: string;
-
-  @Column({
-    comment: 'Access key',
-    default: '',
-  })
   accessKey: string;
 
   @Column({
     comment: 'Secret key',
-    default: '',
   })
   @IsNotEmpty()
   secretKey: string;
 
   @Column({
     comment: 'Remarks',
-    default: '',
     nullable: true,
   })
   remarks: string;
 
-  @ManyToOne(() => User, (user) => user.keys, {
+  @OneToMany(() => UserExchange, (userExchange) => userExchange.exchangeKey, {
     cascade: true,
   })
-  user: User;
+  userExchange: UserExchange[];
 }

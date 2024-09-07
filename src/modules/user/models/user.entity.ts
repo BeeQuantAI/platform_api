@@ -1,5 +1,5 @@
 import { CommonEntity } from '@/common/entities/common.entity';
-import { ExchangeKey } from '@/modules/exchangeKey/models/exchangeKey.entity';
+import { UserExchange } from '@/modules/user-exchange/models/user-exchange.entity';
 import { IsNotEmpty } from 'class-validator';
 import { Column, Entity, OneToMany } from 'typeorm';
 
@@ -114,6 +114,6 @@ export class User extends CommonEntity {
   })
   verificationToken: string;
 
-  @OneToMany(() => ExchangeKey, (key) => key.user)
-  keys: ExchangeKey[];
+  @OneToMany(() => UserExchange, (userExchange) => userExchange.user)
+  userExchange: UserExchange[];
 }
