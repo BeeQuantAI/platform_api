@@ -10,3 +10,7 @@ export const UPDATE_PASSWORD_ERROR = 10008;
 export const UNKNOWN_ERROR = 10009;
 export const ACCOUNT_NOT_VERIFIED = 10010;
 export const VERIFY_ERROR = 10011;
+export const EXCHANGE_KEY_EXIST = 10012;
+export const EXCHANGE_NOT_EXIST = 10013;
+export const EXCHANGE_KET_INVALID = 10014;
+export const EXCHANGE_KEY_STORE_ERROR = 10015;
