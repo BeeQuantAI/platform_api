@@ -12,6 +12,10 @@ import { PasswordValidationPipe } from './pipe/password-validation.pipe';
 import { PasswordPipeErrorFilter } from './filter/password-pipe-error.filter';
 import { emailSchema } from '@/common/utils/helpers';
 import { EmailValidationPipe } from './pipe/email-validation.pipe';
+import { passwordResetSchema } from '@/validation/schemas/auth/password.reset';
+import { ResetPasswordInput } from '../user/dto/reset-password.input';
+import { ResetPasswordValidationPipe } from './pipe/reset-password-validation.pipe';
+import { ResetPasswordPipeErrorFilter } from './filter/reset-password-pipe-error.filter';
 import { GqlAuthGuard } from '@/common/guards/auth.guard';
 
 @Resolver()
@@ -46,5 +50,21 @@ export class AuthResolver {
     @Args('input', new PasswordValidationPipe(passwordUpdateSchema)) input: UpdatePasswordInput
   ): Promise<Result> {
     return await this.authService.changePassword(cxt, input);
+  }
+
+  @Mutation(() => Result, { description: 'Forgot password' })
+  async forgotPassword(
+    @Args('email', new EmailValidationPipe(emailSchema)) email: string
+  ): Promise<Result> {
+    return await this.authService.forgotPassword(email);
+  }
+
+  @Mutation(() => Result, { description: 'Reset password' })
+  @UseFilters(ResetPasswordPipeErrorFilter)
+  async resetPassword(
+    @Args('input', new ResetPasswordValidationPipe(passwordResetSchema)) input: ResetPasswordInput
+  ): Promise<Result> {
+    const result = await this.authService.resetPassword(input);
+    return result;
   }
 }
