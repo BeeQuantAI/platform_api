@@ -13,6 +13,7 @@ import {
   REGISTER_ERROR,
   SUCCESS,
   UPDATE_PASSWORD_ERROR,
+  RESET_PASSWORD_ERROR,
   VERIFY_ERROR,
 } from '@/common/constants/code';
 
@@ -47,6 +48,7 @@ describe('AuthService', () => {
           useValue: {
             generateVerificationToken: jest.fn(),
             sendVerificationEmail: jest.fn(),
+            sendResetPasswordEmail: jest.fn(),
           },
         },
       ],
@@ -311,6 +313,130 @@ describe('AuthService', () => {
       expect(result).toEqual({
         code: UPDATE_PASSWORD_ERROR,
         message: 'password update failed',
+      });
+    });
+  });
+
+  describe('forgotPassword', () => {
+    it('should return error if user does not exist', async () => {
+      jest.spyOn(userService, 'findByEmail').mockResolvedValueOnce(null);
+
+      const result = await service.forgotPassword('nonexistent@example.com');
+
+      expect(result).toEqual({
+        code: RESET_PASSWORD_ERROR,
+        message: "account doesn't exist",
+      });
+    });
+
+    it('should generate reset token and send email for existing user', async () => {
+      const mockUser = { id: '1', email: 'test@example.com' } as User;
+      const mockUpdatedUser = { ...mockUser, resetPasswordToken: 'mock-token' } as User;
+
+      jest
+        .spyOn(userService, 'findByEmail')
+        .mockResolvedValueOnce(mockUser)
+        .mockResolvedValueOnce(mockUpdatedUser);
+      jest
+        .spyOn(emailVerificationService, 'generateVerificationToken')
+        .mockReturnValueOnce('mock-token');
+      jest.spyOn(userService, 'update').mockResolvedValueOnce(true);
+      jest
+        .spyOn(emailVerificationService, 'sendResetPasswordEmail')
+        .mockResolvedValueOnce(undefined);
+
+      const result = await service.forgotPassword('test@example.com');
+
+      expect(result).toEqual({
+        code: SUCCESS,
+        message: 'We have sent you a reset email. Please check your mailbox.',
+      });
+      expect(userService.update).toHaveBeenCalledWith('1', { resetPasswordToken: 'mock-token' });
+      expect(emailVerificationService.sendResetPasswordEmail).toHaveBeenCalledWith(mockUpdatedUser);
+    });
+
+    it('should handle unexpected errors', async () => {
+      jest.spyOn(userService, 'findByEmail').mockRejectedValueOnce(new Error('Database error'));
+
+      const result = await service.forgotPassword('test@example.com');
+
+      expect(result).toEqual({
+        code: RESET_PASSWORD_ERROR,
+        message: 'An unexpected error occurred during sending reset password email.',
+      });
+    });
+  });
+
+  describe('resetPassword', () => {
+    const mockResetPasswordInput = {
+      newPassword: 'newPassword123!',
+      resetToken: 'valid-token',
+    };
+
+    it('should return error for expired token', async () => {
+      jest.spyOn(jwtService, 'verify').mockImplementationOnce(() => {
+        throw { name: 'TokenExpiredError' };
+      });
+
+      const result = await service.resetPassword(mockResetPasswordInput);
+
+      expect(result).toEqual({
+        code: RESET_PASSWORD_ERROR,
+        message: 'Token has expired',
+      });
+    });
+
+    it('should return error if resetPasswordToken is invalid', async () => {
+      const mockUser = {
+        id: '1',
+        email: 'test@example.com',
+        resetPasswordToken: 'different-token',
+      } as User;
+      jest.spyOn(jwtService, 'verify').mockReturnValueOnce({ email: 'test@example.com' });
+      jest.spyOn(userService, 'findByEmail').mockResolvedValueOnce(mockUser);
+
+      const result = await service.resetPassword(mockResetPasswordInput);
+
+      expect(result).toEqual({
+        code: RESET_PASSWORD_ERROR,
+        message: 'Invalid reset password token',
+      });
+    });
+
+    it('should successfully reset password', async () => {
+      const mockUser = {
+        id: '1',
+        email: 'test@example.com',
+        resetPasswordToken: 'valid-token',
+      } as User;
+      jest.spyOn(jwtService, 'verify').mockReturnValueOnce({ email: 'test@example.com' });
+      jest.spyOn(userService, 'findByEmail').mockResolvedValueOnce(mockUser);
+      jest.spyOn(bcrypt, 'hash').mockResolvedValueOnce('hashed-password' as never);
+      jest.spyOn(userService, 'update').mockResolvedValueOnce(true);
+
+      const result = await service.resetPassword(mockResetPasswordInput);
+
+      expect(result).toEqual({
+        code: SUCCESS,
+        message: 'Password reset successfully',
+      });
+      expect(userService.update).toHaveBeenCalledWith('1', {
+        password: 'hashed-password',
+        resetPasswordToken: null,
+      });
+    });
+
+    it('should handle unexpected errors', async () => {
+      jest.spyOn(jwtService, 'verify').mockImplementationOnce(() => {
+        return { email: 'test@example.com' };
+      });
+      jest.spyOn(userService, 'findByEmail').mockRejectedValueOnce(new Error('Database error'));
+
+      const result = await service.resetPassword(mockResetPasswordInput);
+
+      expect(result).toEqual({
+        code: RESET_PASSWORD_ERROR,
+        message: 'An unexpected error occurred during password reset.',
       });
     });
   });
