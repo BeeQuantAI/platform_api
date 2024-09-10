@@ -1,5 +1,5 @@
 import * as bcrypt from 'bcryptjs';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserInput } from '../user/dto/new-user.input';
 import { UserService } from '../user/user.service';
@@ -20,9 +20,12 @@ import {
   UPDATE_PASSWORD_ERROR,
   UNKNOWN_ERROR,
 } from '@/common/constants/code';
+import { ThirdPartyLoginUserInput } from '../user/dto/third-party-login-user.input';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     private emailVerificationService: EmailVerificationService,
     private userService: UserService,
@@ -211,5 +214,35 @@ export class AuthService {
         message: 'an unexpected error occurred during password update',
       };
     }
+  }
+
+  async loginWithThirdParty(user: ThirdPartyLoginUserInput): Promise<Result> {
+    this.logger.log(user);
+    const existingUser = await this.userService.findByEmail(user.email);
+    if (existingUser) {
+      const token = this.jwtService.sign({ id: existingUser.id });
+      return {
+        code: SUCCESS,
+        message: 'login successful',
+        data: token,
+      };
+    }
+    const newUserID = await this.userService.create({
+      email: user.email,
+      displayName: `${user.firstName} ${user.lastName}`,
+      password: randomBytes(16).toString('hex'),
+    });
+    if (newUserID) {
+      const token = this.jwtService.sign({ id: newUserID });
+      return {
+        code: SUCCESS,
+        message: 'login successful',
+        data: token,
+      };
+    }
+    return {
+      code: REGISTER_ERROR,
+      message: 'registration failed',
+    };
   }
 }

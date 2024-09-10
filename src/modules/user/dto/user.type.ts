@@ -18,7 +18,7 @@ export class UserType {
   wechat?: string;
   @Field({ description: 'QQ' })
   qq?: string;
-  @Field({ description: 'is Email Verified'})
+  @Field({ description: 'is Email Verified' })
   isEmailVerified: boolean;
   @Field({ description: 'Verification Token', nullable: true })
   verificationToken?: string;

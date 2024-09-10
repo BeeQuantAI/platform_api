@@ -6,6 +6,10 @@ import { AuthResolver } from './auth.resolver';
 import { UserService } from '../user/user.service';
 import { JwtStrategy } from './jwt.strategy';
 import { User } from '../user/models/user.entity';
+import { PassportModule } from '@nestjs/passport';
+import { GoogleStrategy } from './google.strategy';
+import { FacebookStrategy } from './facebook.strategy';
+import { AuthController } from '@/modules/auth/auth.controller';
 import { EmailVerificationService } from './email.service';
 
 @Module({
@@ -17,6 +21,7 @@ import { EmailVerificationService } from './email.service';
       },
     }),
     TypeOrmModule.forFeature([User]),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
   providers: [
     ConsoleLogger,
@@ -25,7 +30,12 @@ import { EmailVerificationService } from './email.service';
     UserService,
     JwtStrategy,
     EmailVerificationService,
+    EmailVerificationService,
+    GoogleStrategy,
+    FacebookStrategy,
+    EmailVerificationService,
   ],
-  exports: [],
+  controllers: [AuthController],
+  exports: [AuthService],
 })
 export class AuthModule {}
