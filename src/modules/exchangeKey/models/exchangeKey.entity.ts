@@ -5,6 +5,10 @@ import { Column, Entity, OneToMany } from 'typeorm';
 
 @Entity('PortalUserKey')
 export class ExchangeKey extends CommonEntity {
+  @Column({ comment: 'Display name' })
+  @IsNotEmpty()
+  displayName: string;
+
   @Column({
     comment: 'Access key',
   })
