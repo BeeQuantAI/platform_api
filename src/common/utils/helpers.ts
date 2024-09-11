@@ -35,14 +35,22 @@ export enum PasswordUpdateErrorMsgs {
   NewPasswordRequired = 'New password is required',
 }
 
+export enum ExchangeKeyErrorMsgs {
+  ExchangeNameRequired = 'Exchange name is required',
+  AccessKeyRequired = 'Access key is required',
+  SecretKeyRequired = 'Secret key is required',
+}
+
+const commonDisplayNameSchema = z
+  .string()
+  .min(4, { message: DisplayErrorMsgs.MinLength })
+  .max(15, { message: DisplayErrorMsgs.MaxLength })
+  .regex(/^[a-zA-Z0-9-_]+$/, {
+    message: DisplayErrorMsgs.Invalid,
+  });
+
 export const displayNameSchema = z.union([
-  z
-    .string()
-    .min(4, { message: DisplayErrorMsgs.MinLength })
-    .max(15, { message: DisplayErrorMsgs.MaxLength })
-    .regex(/^[a-zA-Z0-9-_]+$/, {
-      message: DisplayErrorMsgs.Invalid,
-    }),
+  commonDisplayNameSchema,
   z
     .string()
     .length(0)
@@ -82,3 +90,20 @@ export const refSchema = z
   .string()
   .optional()
   .default(process.env.DEFAULT_REFERENCE || 'Default_Reference_Name');
+
+export const accessKeySchema = z
+  .string()
+  .min(1, { message: ExchangeKeyErrorMsgs.AccessKeyRequired });
+
+export const secretKeySchema = z
+  .string()
+  .min(1, { message: ExchangeKeyErrorMsgs.SecretKeyRequired });
+
+export const exchangeNameSchema = z
+  .string()
+  .min(1, { message: ExchangeKeyErrorMsgs.ExchangeNameRequired });
+
+export const exchangeKeyDisplayNameSchema = z.intersection(
+  z.string().min(1, { message: DisplayErrorMsgs.Required }),
+  commonDisplayNameSchema
+);

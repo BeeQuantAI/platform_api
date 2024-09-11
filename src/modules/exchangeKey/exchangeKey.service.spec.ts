@@ -22,6 +22,7 @@ describe('ExchangeKeyService', () => {
     secretKey: '456',
   } as ExchangeKey;
   const validExchangeKey = {
+    displayName: 'Binance Core',
     exchangeName: 'binance',
     accessKey: 'accesskey',
     secretKey: 'secretkey',
