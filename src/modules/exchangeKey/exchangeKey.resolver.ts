@@ -31,6 +31,15 @@ export class ExchangeKeyResolver {
     return await this.exchangeKeyService.createNewExchangeKey(id, input);
   }
 
+  @Mutation(() => Result, { description: 'Delete exchange key by id' })
+  async deleteExchangeKey(
+    @Context() cxt,
+    @Args('exchangeKeyId', { type: () => String }) exchangeKeyId: string
+  ): Promise<Result> {
+    const userId = cxt.req.user.id;
+    return await this.exchangeKeyService.deleteExchangeKey(userId, exchangeKeyId);
+  }
+
   @Mutation(() => Result, {
     description: 'Update exchange key',
   })

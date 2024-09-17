@@ -39,6 +39,16 @@ export class UserExchangeService {
     }));
   }
 
+  async findOneByUserAndExchangeKey(
+    userId: string,
+    exchangeKeyId: string
+  ): Promise<UserExchange | undefined> {
+    return await this.userExchangeRepository.findOne({
+      where: { user: { id: userId }, exchangeKey: { id: exchangeKeyId } },
+      relations: ['exchangeKey'],
+    });
+  }
+
   async findUserExchangeNameByExchangeId(id: string): Promise<string> {
     const res = await this.userExchangeRepository.findOne({
       where: { exchangeKey: { id } },

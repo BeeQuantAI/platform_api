@@ -8,6 +8,7 @@ import * as ccxt from 'ccxt';
 import { CreateExchangeKeyInput } from './dto/new-exchangeKey.input';
 import {
   EXCHANGE_KET_INVALID,
+  EXCHANGE_KEY_DELETE_FAILED,
   EXCHANGE_KEY_EXIST,
   EXCHANGE_KEY_NOT_FOUND,
   EXCHANGE_KEY_STORE_ERROR,
@@ -142,6 +143,34 @@ export class ExchangeKeyService {
 
     const newExchange = await this.ExchangeRepository.createNewExchange(exchangeName);
     await this.UserExchangeRepository.establishRelations(userId, exchangeKeyId, newExchange.id);
+  }
+
+  async deleteExchangeKey(userId: string, exchangeKeyId: string): Promise<Result> {
+    const userExchange = await this.UserExchangeRepository.findOneByUserAndExchangeKey(
+      userId,
+      exchangeKeyId
+    );
+
+    if (!userExchange) {
+      return {
+        code: EXCHANGE_NOT_EXIST,
+        message: 'Exchange key not found or does not belong to the user',
+      };
+    }
+
+    const result = await this.ExchangeKeyRepository.delete({ id: exchangeKeyId });
+
+    if (result.affected === 0) {
+      return {
+        code: EXCHANGE_KEY_DELETE_FAILED,
+        message: 'Failed to delete exchange key',
+      };
+    }
+
+    return {
+      code: SUCCESS,
+      message: 'Exchange key deleted successfully',
+    };
   }
 
   async findExchangeKeyById(id: string): Promise<IResult<ExchangeKeyType>> {
