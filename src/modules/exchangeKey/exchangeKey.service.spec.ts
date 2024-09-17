@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { ExchangeKeyService } from './exchangeKey.service';
 import { ExchangeKey } from './models/exchangeKey.entity';
 import {
@@ -9,14 +9,17 @@ import {
   EXCHANGE_KET_INVALID,
   SUCCESS,
   EXCHANGE_KEY_NOT_FOUND,
+  EXCHANGE_KEY_DELETE_FAILED,
 } from '@/common/constants/code';
 import { UserExchangeService } from '../user-exchange/user-exchange.service';
 import { ExchangeService } from '../exchange/exchange.service';
 import * as ccxt from 'ccxt';
+import { UserExchange } from '../user-exchange/models/user-exchange.entity';
 
 describe('ExchangeKeyService', () => {
   let exchangeKeyService: ExchangeKeyService;
   let exchangeKeyRepo: Repository<ExchangeKey>;
+  let userExchangeService: UserExchangeService;
 
   const mockExistExchangeKey = {
     accessKey: '123',
@@ -29,6 +32,14 @@ describe('ExchangeKeyService', () => {
     accessKey: 'accesskey',
     secretKey: 'secretkey',
   };
+  const mockUserExchange = {
+    id: 'exchangeKeyId',
+    user: { id: 'userId' },
+    exchangeKey: { id: 'exchangeKeyId' },
+    exchange: { id: 'exchangeId' },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  } as UserExchange;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -40,12 +51,14 @@ describe('ExchangeKeyService', () => {
             findOneBy: jest.fn(),
             create: jest.fn(),
             save: jest.fn(),
+            delete: jest.fn(),
           },
         },
         {
           provide: UserExchangeService,
           useValue: {
             findUserExchangeNameByExchangeId: jest.fn().mockResolvedValue('binance'),
+            findOneByUserAndExchangeKey: jest.fn(),
           },
         },
         { provide: ExchangeService, useValue: {} },
@@ -54,6 +67,7 @@ describe('ExchangeKeyService', () => {
 
     exchangeKeyService = module.get(ExchangeKeyService);
     exchangeKeyRepo = module.get(getRepositoryToken(ExchangeKey));
+    userExchangeService = module.get(UserExchangeService);
   });
 
   it('should be defined', () => {
@@ -152,6 +166,41 @@ describe('ExchangeKeyService', () => {
     expect(result).toEqual({
       code: SUCCESS,
       message: 'Exchange key updated successfully',
+    });
+  });
+
+  it('should return EXCHANGE_NOT_EXIST if user exchange not found', async () => {
+    jest.spyOn(userExchangeService, 'findOneByUserAndExchangeKey').mockResolvedValue(null);
+    const result = await exchangeKeyService.deleteExchangeKey('userId', 'exchangeKeyId');
+    expect(result).toEqual({
+      code: EXCHANGE_NOT_EXIST,
+      message: 'Exchange key not found or does not belong to the user',
+    });
+  });
+
+  it('should return EXCHANGE_KEY_DELETE_FAILED if delete operation fails', async () => {
+    jest
+      .spyOn(userExchangeService, 'findOneByUserAndExchangeKey')
+      .mockResolvedValue(mockUserExchange);
+    const mockDeleteResult: DeleteResult = { affected: 0 } as DeleteResult;
+    exchangeKeyRepo.delete = jest.fn().mockResolvedValue(mockDeleteResult);
+    const result = await exchangeKeyService.deleteExchangeKey('userId', 'exchangeKeyId');
+    expect(result).toEqual({
+      code: EXCHANGE_KEY_DELETE_FAILED,
+      message: 'Failed to delete exchange key',
+    });
+  });
+
+  it('should return SUCCESS if delete operation succeeds', async () => {
+    jest
+      .spyOn(userExchangeService, 'findOneByUserAndExchangeKey')
+      .mockResolvedValue(mockUserExchange);
+    const mockDeleteResult: DeleteResult = { affected: 1 } as DeleteResult;
+    exchangeKeyRepo.delete = jest.fn().mockResolvedValue(mockDeleteResult);
+    const result = await exchangeKeyService.deleteExchangeKey('userId', 'exchangeKeyId');
+    expect(result).toEqual({
+      code: SUCCESS,
+      message: 'Exchange key deleted successfully',
     });
   });
 });
