@@ -1,3 +1,5 @@
+import { IResult } from './../../common/dto/result.type';
+import { ExchangeKeyType } from './dto/exchangeKey.type';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -7,6 +9,7 @@ import { CreateExchangeKeyInput } from './dto/new-exchangeKey.input';
 import {
   EXCHANGE_KET_INVALID,
   EXCHANGE_KEY_EXIST,
+  EXCHANGE_KEY_NOT_FOUND,
   EXCHANGE_KEY_STORE_ERROR,
   EXCHANGE_NOT_EXIST,
   SUCCESS,
@@ -14,6 +17,7 @@ import {
 import { Result } from '@/common/dto/result.type';
 import { UserExchangeService } from '../user-exchange/user-exchange.service';
 import { ExchangeService } from '../exchange/exchange.service';
+import { UpdateExchangeKeyInput } from './dto/update-exchangeKey.input';
 
 @Injectable()
 export class ExchangeKeyService {
@@ -67,6 +71,42 @@ export class ExchangeKeyService {
     };
   }
 
+  async updateExchangeKey(input: UpdateExchangeKeyInput): Promise<Result> {
+    const { id, exchangeName, accessKey, secretKey, displayName } = input;
+    const exitedExchangeKey = await this.ExchangeKeyRepository.findOneBy({ id });
+
+    if (!exitedExchangeKey) {
+      return {
+        code: EXCHANGE_KEY_NOT_FOUND,
+        message: 'Exchange key not found',
+      };
+    }
+
+    const verifyResult = await this.verifyExchangeKey(exchangeName, accessKey, secretKey);
+
+    if (!verifyResult) {
+      return {
+        code: EXCHANGE_KET_INVALID,
+        message: 'Exchange key is invalid',
+      };
+    }
+
+    const newExchangeKey = { ...exitedExchangeKey, accessKey, secretKey, displayName };
+
+    try {
+      await this.ExchangeKeyRepository.save(newExchangeKey);
+      return {
+        code: SUCCESS,
+        message: 'Exchange key updated successfully',
+      };
+    } catch (e) {
+      return {
+        code: EXCHANGE_KEY_STORE_ERROR,
+        message: 'Exchange key update failed',
+      };
+    }
+  }
+
   async verifyExchangeKey(
     exchangeName: string,
     accessKey: string,
@@ -102,5 +142,22 @@ export class ExchangeKeyService {
 
     const newExchange = await this.ExchangeRepository.createNewExchange(exchangeName);
     await this.UserExchangeRepository.establishRelations(userId, exchangeKeyId, newExchange.id);
+  }
+
+  async findExchangeKeyById(id: string): Promise<IResult<ExchangeKeyType>> {
+    const exchangeKey = await this.ExchangeKeyRepository.findOneBy({ id });
+    const exchange = await this.UserExchangeRepository.findUserExchangeNameByExchangeId(id);
+    const res = { ...exchangeKey, exchangeName: exchange };
+    if (!exchangeKey) {
+      return {
+        code: EXCHANGE_KEY_NOT_FOUND,
+        message: 'Exchange key not found',
+      };
+    }
+    return {
+      code: SUCCESS,
+      message: 'Exchange key found',
+      data: res,
+    };
   }
 }

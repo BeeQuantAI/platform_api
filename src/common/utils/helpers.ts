@@ -36,6 +36,8 @@ export enum PasswordUpdateErrorMsgs {
 }
 
 export enum ExchangeKeyErrorMsgs {
+  IdRequired = 'Id is required',
+  IdInvalid = 'Invalid id',
   ExchangeNameRequired = 'Exchange name is required',
   AccessKeyRequired = 'Access key is required',
   SecretKeyRequired = 'Secret key is required',
