@@ -15,8 +15,8 @@ export interface IResults<T> {
   page?: Page;
 }
 
-export function createResult<T>(ItemType: ClassType<T>): ClassType<IResult<T>> {
-  @ObjectType()
+export function createResult<T>(ItemType: ClassType<T>, typeName: string): ClassType<IResult<T>> {
+  @ObjectType(typeName)
   class Result implements IResult<T> {
     @Field(() => Int)
     code: number;

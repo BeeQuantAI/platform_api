@@ -38,4 +38,12 @@ export class UserExchangeService {
       id: exchange.exchange.id,
     }));
   }
+
+  async findUserExchangeNameByExchangeId(id: string): Promise<string> {
+    const res = await this.userExchangeRepository.findOne({
+      where: { exchangeKey: { id } },
+      relations: ['exchange'],
+    });
+    return res.exchange.name;
+  }
 }

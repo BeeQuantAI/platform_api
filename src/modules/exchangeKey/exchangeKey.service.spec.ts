@@ -8,6 +8,7 @@ import {
   EXCHANGE_NOT_EXIST,
   EXCHANGE_KET_INVALID,
   SUCCESS,
+  EXCHANGE_KEY_NOT_FOUND,
 } from '@/common/constants/code';
 import { UserExchangeService } from '../user-exchange/user-exchange.service';
 import { ExchangeService } from '../exchange/exchange.service';
@@ -22,6 +23,7 @@ describe('ExchangeKeyService', () => {
     secretKey: '456',
   } as ExchangeKey;
   const validExchangeKey = {
+    id: 'uuid123',
     displayName: 'Binance Core',
     exchangeName: 'binance',
     accessKey: 'accesskey',
@@ -40,7 +42,12 @@ describe('ExchangeKeyService', () => {
             save: jest.fn(),
           },
         },
-        { provide: UserExchangeService, useValue: {} },
+        {
+          provide: UserExchangeService,
+          useValue: {
+            findUserExchangeNameByExchangeId: jest.fn().mockResolvedValue('binance'),
+          },
+        },
         { provide: ExchangeService, useValue: {} },
       ],
     }).compile();
@@ -113,6 +120,38 @@ describe('ExchangeKeyService', () => {
     expect(result).toEqual({
       code: SUCCESS,
       message: 'Exchange key created successfully',
+    });
+  });
+
+  it('should return exchange key not found, if the exchange key is not found', async () => {
+    exchangeKeyRepo.findOneBy = jest.fn().mockResolvedValue(null);
+    const result = await exchangeKeyService.findExchangeKeyById('uuid222');
+    expect(result).toEqual({
+      code: EXCHANGE_KEY_NOT_FOUND,
+      message: 'Exchange key not found',
+    });
+  });
+
+  it('should return the exchange key, if the exchange key is found', async () => {
+    exchangeKeyRepo.findOneBy = jest.fn().mockResolvedValue(validExchangeKey);
+    const result = await exchangeKeyService.findExchangeKeyById(validExchangeKey.id);
+    expect(result).toEqual({
+      code: SUCCESS,
+      message: 'Exchange key found',
+      data: validExchangeKey,
+    });
+  });
+
+  it('should update the exchange key', async () => {
+    const updateExchangeKey = { ...validExchangeKey, accessKey: 'newAccess' };
+    exchangeKeyRepo.findOneBy = jest.fn().mockResolvedValue(validExchangeKey);
+    exchangeKeyService.verifyExchangeKey = jest.fn().mockResolvedValue(true);
+
+    exchangeKeyRepo.save = jest.fn().mockResolvedValue(updateExchangeKey);
+    const result = await exchangeKeyService.updateExchangeKey(updateExchangeKey);
+    expect(result).toEqual({
+      code: SUCCESS,
+      message: 'Exchange key updated successfully',
     });
   });
 });
