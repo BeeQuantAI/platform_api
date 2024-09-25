@@ -219,7 +219,7 @@ export class AuthService {
   }
 
   async loginWithThirdParty(user: ThirdPartyLoginUserInput): Promise<Result> {
-    this.logger.log(user);
+    //this.logger.log(user);
     const existingUser = await this.userService.findByEmail(user.email);
     if (existingUser) {
       const token = this.jwtService.sign({ id: existingUser.id });
