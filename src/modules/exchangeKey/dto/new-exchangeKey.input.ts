@@ -2,6 +2,8 @@ import { Field, InputType } from '@nestjs/graphql';
 
 @InputType()
 export class CreateExchangeKeyInput {
+  @Field({ description: 'Display name' })
+  displayName: string;
   @Field({ description: 'Exchange name' })
   exchangeName: string;
   @Field({ description: 'Access key' })

@@ -7,6 +7,7 @@ import { Result } from '@/common/dto/result.type';
 import { EmailVerificationService } from './email.service';
 import { VERIFY_ERROR } from '@/common/constants/code';
 import { UpdatePasswordInput } from '../user/dto/update-password.input';
+import { ResetPasswordInput } from '../user/dto/reset-password.input';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -19,6 +20,7 @@ import {
   SUCCESS,
   UPDATE_PASSWORD_ERROR,
   UNKNOWN_ERROR,
+  RESET_PASSWORD_ERROR,
 } from '@/common/constants/code';
 import { ThirdPartyLoginUserInput } from '../user/dto/third-party-login-user.input';
 import { randomBytes } from 'crypto';
@@ -244,5 +246,98 @@ export class AuthService {
       code: REGISTER_ERROR,
       message: 'registration failed',
     };
+  }
+
+  async forgotPassword(email: string): Promise<Result> {
+    try {
+      const user = await this.userService.findByEmail(email);
+      if (!user) {
+        return {
+          code: RESET_PASSWORD_ERROR,
+          message: "account doesn't exist",
+        };
+      }
+
+      const resetPasswordToken = this.emailVerificationService.generateVerificationToken(email);
+      const res = await this.userService.update(user.id, {
+        resetPasswordToken,
+      });
+      if (res) {
+        // re-query user to get the updated resetPasswordToken from database, cuz the `user` query before is a cached object and will not be updated automatically
+        const updatedUser = await this.userService.findByEmail(email);
+        await this.emailVerificationService.sendResetPasswordEmail(updatedUser);
+        return {
+          code: SUCCESS,
+          message: 'We have sent you a reset email. Please check your mailbox.',
+        };
+      }
+    } catch (error) {
+      return {
+        code: RESET_PASSWORD_ERROR,
+        message: 'An unexpected error occurred during sending reset password email.',
+      };
+    }
+  }
+
+  async resetPassword(input: ResetPasswordInput): Promise<Result> {
+    try {
+      const { newPassword, resetToken } = input;
+
+      let decodedToken;
+      try {
+        decodedToken = this.jwtService.verify(resetToken);
+      } catch (error) {
+        if (error.name === 'TokenExpiredError') {
+          return {
+            code: RESET_PASSWORD_ERROR,
+            message: 'Token has expired',
+          };
+        }
+        return {
+          code: RESET_PASSWORD_ERROR,
+          message: 'Invalid reset password token',
+        };
+      }
+
+      const { email } = decodedToken;
+
+      const user = await this.userService.findByEmail(email);
+
+      if (!user) {
+        return {
+          code: RESET_PASSWORD_ERROR,
+          message: 'User not found',
+        };
+      }
+
+      if (!user.resetPasswordToken || user.resetPasswordToken !== resetToken) {
+        return {
+          code: RESET_PASSWORD_ERROR,
+          message: 'Invalid reset password token',
+        };
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      const res = await this.userService.update(user.id, {
+        password: hashedPassword,
+        resetPasswordToken: null,
+      });
+      if (res) {
+        return {
+          code: SUCCESS,
+          message: 'Password reset successfully',
+        };
+      } else {
+        return {
+          code: RESET_PASSWORD_ERROR,
+          message: 'Password reset failed',
+        };
+      }
+    } catch (error) {
+      return {
+        code: RESET_PASSWORD_ERROR,
+        message: 'An unexpected error occurred during password reset.',
+      };
+    }
   }
 }

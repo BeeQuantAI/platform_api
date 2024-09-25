@@ -22,4 +22,6 @@ export class UserType {
   isEmailVerified: boolean;
   @Field({ description: 'Verification Token', nullable: true })
   verificationToken?: string;
+  @Field({ description: 'Reset Password Token', nullable: true })
+  resetPasswordToken?: string;
 }

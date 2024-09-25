@@ -114,6 +114,12 @@ export class User extends CommonEntity {
   })
   verificationToken: string;
 
+  @Column({
+    comment: 'Reset Password Token',
+    nullable: true,
+  })
+  resetPasswordToken: string;
+
   @OneToMany(() => UserExchange, (userExchange) => userExchange.user)
   userExchange: UserExchange[];
 }
