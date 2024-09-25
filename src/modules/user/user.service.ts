@@ -37,7 +37,7 @@ export class UserService {
     });
 
     this.userRepository.merge(found, entity);
-    const res = this.userRepository.save(found);
+    const res = await this.userRepository.save(found);
 
     if (res) {
       return true;

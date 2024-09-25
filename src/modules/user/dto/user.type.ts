@@ -8,15 +8,15 @@ export class UserType {
   email: string;
   @Field({ description: 'User is referred by' })
   ref: string;
-  @Field({ description: 'User real name' })
+  @Field({ description: 'User real name', nullable: true })
   realName?: string;
   @Field({ description: 'User display name' })
   displayName: string;
-  @Field({ description: 'Mobile number' })
+  @Field({ description: 'Mobile number', nullable: true })
   mobile?: string;
-  @Field({ description: 'Wechat' })
+  @Field({ description: 'Wechat', nullable: true })
   wechat?: string;
-  @Field({ description: 'QQ' })
+  @Field({ description: 'QQ', nullable: true })
   qq?: string;
   @Field({ description: 'is Email Verified' })
   isEmailVerified: boolean;
