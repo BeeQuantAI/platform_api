@@ -10,7 +10,7 @@ export class AuthController {
 
   @Get('facebook')
   @UseGuards(FacebookAuthGuard)
-  facebookLogin(@Res() res: Response) {}
+  facebookLogin() {}
 
   @Get('facebook/callback')
   @UseGuards(FacebookAuthGuard)
@@ -26,7 +26,7 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
-  async googleCallback(@Req() req, @Res() res: Response) {
+  async googleCallback(@Req() req: any, @Res() res: Response) {
     const result = await this.authService.loginWithThirdParty(req.user);
     const token = result.data;
     res.redirect(`${process.env.OAUTH_REDIRECT_URI}?token=${token}`);
