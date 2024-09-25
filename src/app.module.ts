@@ -40,6 +40,7 @@ import { UserExchangeModule } from './modules/user-exchange/user-exchange.module
         };
         return errorMessage;
       },
+      includeStacktraceInErrorResponses: false,
     }),
     UserModule,
     AuthModule,
