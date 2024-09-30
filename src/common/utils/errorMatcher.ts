@@ -19,6 +19,9 @@ const actions = {
   too_big: (message: string) => {
     throw new InvalidInputException(message);
   },
+  invalid_enum_value: (message: string) => {
+    throw new InvalidInputException(message);
+  },
 };
 
 export function errorMatcher({ code, message, min }: errorMatcherProps): HttpException {
