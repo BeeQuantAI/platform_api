@@ -12,6 +12,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ExchangeModule } from './modules/exchange/exchange.module';
 import { UserExchangeModule } from './modules/user-exchange/user-exchange.module';
 import { BinanceDataModule } from './modules/binance-data/binance-data.module';
+import { MarketOverviewModule } from './modules/market-overview/market-overview.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { BinanceDataModule } from './modules/binance-data/binance-data.module';
     ExchangeModule,
     UserExchangeModule,
     BinanceDataModule,
+    MarketOverviewModule,
   ],
   controllers: [AppController],
   providers: [AppService],
