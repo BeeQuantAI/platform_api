@@ -26,20 +26,20 @@ export class CoinOverview {
   @Field()
   priceChangePercentage7d: number;
 
-  @Field()
-  low24h: number;
-
-  @Field()
-  high24h: number;
-
-  @Field()
-  allTimeHigh: number;
-
-  @Field()
-  circulationSupply: number;
+  @Field({ nullable: true })
+  low24h?: number;
 
   @Field({ nullable: true })
-  totalMaximumSupply: number;
+  high24h?: number;
+
+  @Field({ nullable: true })
+  allTimeHigh?: number;
+
+  @Field({ nullable: true })
+  circulationSupply?: number;
+
+  @Field({ nullable: true })
+  totalMaximumSupply?: number;
 }
 
 @ObjectType()

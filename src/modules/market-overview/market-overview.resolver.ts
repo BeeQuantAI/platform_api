@@ -37,9 +37,13 @@ export class MarketOverviewResolver {
 
   @Query(() => CoinOverview, { nullable: true })
   async getCoinDetails(@Args('symbol') symbol: string): Promise<CoinOverview | null> {
-    const overview = await this.marketOverviewService.getMarketOverview();
-    return (
-      overview.top20Cryptocurrencies.find((coin) => coin.symbol === symbol.toUpperCase()) || null
-    );
+    return this.marketOverviewService.getCoinDetails(symbol);
+  }
+
+  @Query(() => CoinOverview, { nullable: true })
+  async getCoinHistoryDetails(
+    @Args('symbol') symbol: string
+  ): Promise<Partial<CoinOverview> | null> {
+    return this.marketOverviewService.getCoinHistoryDetails(symbol);
   }
 }
