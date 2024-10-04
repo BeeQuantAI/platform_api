@@ -1,6 +1,6 @@
 import { Resolver, Query, Args } from '@nestjs/graphql';
 import { MarketOverviewService } from './market-overview.service';
-import { MarketOverview, CoinOverview } from './dto/market-overview.types';
+import { MarketOverview, CoinOverview, CoinDetails } from './dto/market-overview.types';
 
 @Resolver()
 export class MarketOverviewResolver {
@@ -13,37 +13,21 @@ export class MarketOverviewResolver {
 
   @Query(() => [CoinOverview])
   async getTopMarketCap(): Promise<CoinOverview[]> {
-    const overview = await this.marketOverviewService.getMarketOverview();
-    return overview.topMarketCap;
+    return this.marketOverviewService.getTopMarketCap();
   }
 
   @Query(() => [CoinOverview])
   async getTopClimbers(): Promise<CoinOverview[]> {
-    const overview = await this.marketOverviewService.getMarketOverview();
-    return overview.topClimbers;
+    return this.marketOverviewService.getTopClimbers();
   }
 
   @Query(() => [CoinOverview])
   async getTopFallers(): Promise<CoinOverview[]> {
-    const overview = await this.marketOverviewService.getMarketOverview();
-    return overview.topFallers;
+    return this.marketOverviewService.getTopFallers();
   }
 
-  @Query(() => [CoinOverview])
-  async getTop20Cryptocurrencies(): Promise<CoinOverview[]> {
-    const overview = await this.marketOverviewService.getMarketOverview();
-    return overview.top20Cryptocurrencies;
-  }
-
-  @Query(() => CoinOverview, { nullable: true })
-  async getCoinDetails(@Args('symbol') symbol: string): Promise<CoinOverview | null> {
+  @Query(() => CoinDetails)
+  async getCoinDetails(@Args('symbol') symbol: string): Promise<CoinDetails> {
     return this.marketOverviewService.getCoinDetails(symbol);
-  }
-
-  @Query(() => CoinOverview, { nullable: true })
-  async getCoinHistoryDetails(
-    @Args('symbol') symbol: string
-  ): Promise<Partial<CoinOverview> | null> {
-    return this.marketOverviewService.getCoinHistoryDetails(symbol);
   }
 }

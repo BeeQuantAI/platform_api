@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { CoinOverview, MarketOverview } from './dto/market-overview.types';
+import { CoinOverview, MarketOverview, CoinDetails } from './dto/market-overview.types';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class MarketOverviewService {
   private readonly BINANCE_API_URL = 'https://api.binance.com/api/v3';
-  private readonly COINGECKO_API_URL = 'https://api.coingecko.com/api/v3';
   private readonly COIN_LIST = [
     'BTC',
     'ETH',
@@ -29,97 +28,140 @@ export class MarketOverviewService {
     'LTC',
     'DAI',
   ];
+  private readonly STABLE_COINS = ['USDC', 'DAI'];
 
   constructor(private httpService: HttpService) {}
 
   async getMarketOverview(): Promise<MarketOverview> {
     const tickerData = await this.fetchTickerData();
-    const coinData = await this.processCoinData(tickerData);
+    const sevenDayChangeData = await this.fetchSevenDayChangeData();
+    const coinData = this.processCoinData(tickerData, sevenDayChangeData);
+    const validCoinData = this.filterAndDeduplicate(coinData);
+
+    const nonStableCoins = validCoinData.filter((coin) => !this.STABLE_COINS.includes(coin.symbol));
 
     return {
-      topMarketCap: this.getTopByAttribute(coinData, 'marketCap', 5),
-      topClimbers: this.getTopByAttribute(coinData, 'priceChangePercentage24h', 5),
-      topFallers: this.getTopByAttribute(coinData, 'priceChangePercentage24h', 5, true),
-      top20Cryptocurrencies: coinData,
+      topMarketCap: this.getTopByAttribute(validCoinData, 'marketCap', 5),
+      topClimbers: this.getTopByAttribute(nonStableCoins, 'priceChangePercentage24h', 5),
+      topFallers: this.getTopByAttribute(nonStableCoins, 'priceChangePercentage24h', 5, true),
+      top20Cryptocurrencies: this.getTopByAttribute(validCoinData, 'marketCap', 20),
     };
   }
 
-  async getCoinDetails(symbol: string): Promise<CoinOverview | null> {
+  async getTopMarketCap(): Promise<CoinOverview[]> {
     const tickerData = await this.fetchTickerData();
-    const coinData = await this.processCoinData(tickerData);
-    return coinData.find((coin) => coin.symbol === symbol) || null;
+    const coinData = this.processCoinData(tickerData, new Map());
+    const validCoinData = this.filterAndDeduplicate(coinData);
+    return this.getTopByAttribute(validCoinData, 'marketCap', 5);
   }
 
-  async getCoinHistoryDetails(symbol: string): Promise<Partial<CoinOverview> | null> {
-    try {
-      const { data } = await firstValueFrom(
-        this.httpService.get(
-          `${this.COINGECKO_API_URL}/coins/${this.getFullName(symbol).toLowerCase()}`
-        )
-      );
-      return {
-        symbol,
-        name: this.getFullName(symbol),
-        allTimeHigh: data.market_data.ath.usd,
-        circulationSupply: data.market_data.circulating_supply,
-        totalMaximumSupply: data.market_data.total_supply,
-      };
-    } catch (error) {
-      console.error(`Error fetching data from CoinGecko for ${symbol}:`, error);
-      return null;
-    }
+  async getTopClimbers(): Promise<CoinOverview[]> {
+    const tickerData = await this.fetchTickerData();
+    const coinData = this.processCoinData(tickerData, new Map());
+    const validCoinData = this.filterAndDeduplicate(coinData);
+    const nonStableCoins = validCoinData.filter((coin) => !this.STABLE_COINS.includes(coin.symbol));
+    return this.getTopByAttribute(nonStableCoins, 'priceChangePercentage24h', 5);
+  }
+
+  async getTopFallers(): Promise<CoinOverview[]> {
+    const tickerData = await this.fetchTickerData();
+    const coinData = this.processCoinData(tickerData, new Map());
+    const validCoinData = this.filterAndDeduplicate(coinData);
+    const nonStableCoins = validCoinData.filter((coin) => !this.STABLE_COINS.includes(coin.symbol));
+    return this.getTopByAttribute(nonStableCoins, 'priceChangePercentage24h', 5, true);
+  }
+
+  async getCoinDetails(symbol: string): Promise<CoinDetails> {
+    const { data } = await firstValueFrom(
+      this.httpService.get(`${this.BINANCE_API_URL}/ticker/24hr`, {
+        params: { symbol: `${symbol}USDT` },
+      })
+    );
+
+    return {
+      symbol,
+      name: this.getFullName(symbol),
+      price: parseFloat(data.lastPrice),
+      volume24h: parseFloat(data.volume),
+      priceChange24h: parseFloat(data.priceChange),
+      priceChangePercentage24h: parseFloat(data.priceChangePercent),
+      low24h: parseFloat(data.lowPrice),
+      high24h: parseFloat(data.highPrice),
+    };
   }
 
   private async fetchTickerData(): Promise<any[]> {
     const { data } = await firstValueFrom(
       this.httpService.get(`${this.BINANCE_API_URL}/ticker/24hr`)
     );
-    return data.filter((ticker) => this.COIN_LIST.includes(ticker.symbol.replace('USDT', '')));
-  }
-
-  private async processCoinData(tickerData: any[]): Promise<CoinOverview[]> {
-    return Promise.all(
-      tickerData.map(async (ticker) => {
-        const symbol = ticker.symbol.replace('USDT', '');
-        const priceChangePercentage7d = await this.calculate7DayPriceChange(symbol);
-        return {
-          symbol,
-          name: this.getFullName(symbol),
-          marketCap: parseFloat(ticker.weightedAvgPrice) * parseFloat(ticker.volume),
-          price: parseFloat(ticker.lastPrice),
-          volume24h: parseFloat(ticker.volume),
-          priceChange24h: parseFloat(ticker.priceChange),
-          priceChangePercentage24h: parseFloat(ticker.priceChangePercent),
-          priceChangePercentage7d,
-          low24h: parseFloat(ticker.lowPrice),
-          high24h: parseFloat(ticker.highPrice),
-        };
-      })
+    return data.filter(
+      (ticker) =>
+        this.COIN_LIST.includes(ticker.symbol.replace('USDT', '')) &&
+        parseFloat(ticker.lastPrice) > 0
     );
   }
 
-  private async calculate7DayPriceChange(symbol: string): Promise<number> {
-    try {
+  private async fetchSevenDayChangeData(): Promise<Map<string, number>> {
+    const sevenDayChangeMap = new Map<string, number>();
+    const currentTime = Date.now();
+    const sevenDaysAgo = currentTime - 7 * 24 * 60 * 60 * 1000;
+
+    for (const coin of this.COIN_LIST) {
       const { data } = await firstValueFrom(
         this.httpService.get(`${this.BINANCE_API_URL}/klines`, {
           params: {
-            symbol: `${symbol}USDT`,
+            symbol: `${coin}USDT`,
             interval: '1d',
-            limit: 8,
+            startTime: sevenDaysAgo,
+            endTime: currentTime,
+            limit: 7,
           },
         })
       );
 
-      if (data.length < 8) return 0;
-
-      const oldPrice = parseFloat(data[0][1]); // Opening price 7 days ago
-      const newPrice = parseFloat(data[7][4]); // Closing price of the most recent day
-
-      return ((newPrice - oldPrice) / oldPrice) * 100;
-    } catch (error) {
-      console.error(`Error fetching 7-day price change from Binance for ${symbol}:`, error);
-      return 0;
+      if (data.length >= 2) {
+        const oldPrice = parseFloat(data[0][4]);
+        const newPrice = parseFloat(data[data.length - 1][4]);
+        const changePercentage = ((newPrice - oldPrice) / oldPrice) * 100;
+        sevenDayChangeMap.set(coin, changePercentage);
+      }
     }
+
+    return sevenDayChangeMap;
+  }
+
+  private processCoinData(
+    tickerData: any[],
+    sevenDayChangeData: Map<string, number>
+  ): CoinOverview[] {
+    return tickerData.map((ticker) => {
+      const symbol = ticker.symbol.replace('USDT', '');
+      return {
+        symbol: symbol,
+        name: this.getFullName(symbol),
+        marketCap: parseFloat(ticker.volume) * parseFloat(ticker.lastPrice),
+        price: parseFloat(ticker.lastPrice),
+        volume24h: parseFloat(ticker.volume),
+        priceChange24h: parseFloat(ticker.priceChange),
+        priceChangePercentage24h: parseFloat(ticker.priceChangePercent),
+        priceChangePercentage7d: sevenDayChangeData.get(symbol) || 0,
+      };
+    });
+  }
+
+  private filterAndDeduplicate(coinData: CoinOverview[]): CoinOverview[] {
+    const uniqueCoins = new Map<string, CoinOverview>();
+
+    for (const coin of coinData) {
+      if (
+        !uniqueCoins.has(coin.symbol) ||
+        coin.marketCap > uniqueCoins.get(coin.symbol).marketCap
+      ) {
+        uniqueCoins.set(coin.symbol, coin);
+      }
+    }
+
+    return Array.from(uniqueCoins.values());
   }
 
   private getTopByAttribute(
@@ -152,7 +194,7 @@ export class MarketOverviewService {
       AVAX: 'Avalanche',
       TRX: 'Tron',
       DOT: 'Polkadot',
-      BCH: 'Bitcoin Cash',
+      BCH: 'Bitcoin cash',
       LINK: 'Chainlink',
       NEAR: 'NEAR Protocol',
       MATIC: 'Polygon',
