@@ -13,6 +13,7 @@ import { GqlHttpExceptionFilter } from '@/common/filters/error.exception.filter'
 import { APP_FILTER } from '@nestjs/core';
 import { ExchangeModule } from './modules/exchange/exchange.module';
 import { UserExchangeModule } from './modules/user-exchange/user-exchange.module';
+import { BinanceDataModule } from './modules/binance-data/binance-data.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { UserExchangeModule } from './modules/user-exchange/user-exchange.module
     ExchangeKeyModule,
     ExchangeModule,
     UserExchangeModule,
+    BinanceDataModule,
   ],
   controllers: [AppController],
   providers: [

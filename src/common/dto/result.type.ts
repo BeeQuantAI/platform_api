@@ -28,8 +28,11 @@ export function createResult<T>(ItemType: ClassType<T>, typeName: string): Class
   return Result;
 }
 
-export function createResults<T>(ItemTypes: ClassType<T>): ClassType<IResults<T>> {
-  @ObjectType()
+export function createResults<T>(
+  ItemTypes: ClassType<T>,
+  typeName: string
+): ClassType<IResults<T>> {
+  @ObjectType(typeName)
   class Results {
     @Field(() => Int)
     code: number;

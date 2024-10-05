@@ -43,6 +43,14 @@ export enum ExchangeKeyErrorMsgs {
   SecretKeyRequired = 'Secret key is required',
 }
 
+export enum UiKlineQueryErrorMsgs {
+  SymbolRequired = 'Symbol is required',
+  IntervalInvalid = 'Interval is not supported or provided',
+  TimeInvalid = 'Invalid time format, it should be the date time string format ',
+  LimitMinLength = 'Limit must be at least 1',
+  LimitMaxLength = 'Limit must be at most 1000',
+}
+
 const commonDisplayNameSchema = z
   .string()
   .min(4, { message: DisplayErrorMsgs.MinLength })
@@ -109,3 +117,43 @@ export const exchangeKeyDisplayNameSchema = z.intersection(
   z.string().min(1, { message: DisplayErrorMsgs.Required }),
   commonDisplayNameSchema
 );
+
+export const symbolSchema = z.string().min(1, { message: UiKlineQueryErrorMsgs.SymbolRequired });
+
+export const intervalSchema = z.enum(
+  [
+    '1s',
+    '1m',
+    '3m',
+    '5m',
+    '15m',
+    '30m',
+    '1h',
+    '2h',
+    '4h',
+    '6h',
+    '8h',
+    '12h',
+    '1d',
+    '3d',
+    '1w',
+    '1M',
+  ],
+  { message: UiKlineQueryErrorMsgs.IntervalInvalid }
+);
+
+export const timeSchema = z.union([
+  z.string().datetime({ message: UiKlineQueryErrorMsgs.TimeInvalid }),
+  z.string().length(0),
+]);
+
+export const limitSchema = z.union([
+  z
+    .number()
+    .int()
+    .min(1, { message: UiKlineQueryErrorMsgs.LimitMinLength })
+    .max(1000, { message: UiKlineQueryErrorMsgs.LimitMaxLength }),
+  z.string().length(0),
+]);
+
+export const timeZoneSchema = z.string().optional();
