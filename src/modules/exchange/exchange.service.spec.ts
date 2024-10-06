@@ -30,9 +30,14 @@ describe('ExchangeService', () => {
 
   it('should create a new exchange', async () => {
     const exchange = { id: '123', name: 'binance', userExchange: [] } as Exchange;
-    jest.spyOn(service, 'createNewExchange').mockResolvedValueOnce(exchange);
+    const exchangeResult = {
+      code: 200,
+      message: 'Exchange created successfully',
+      data: exchange,
+    };
+    jest.spyOn(service, 'createNewExchange').mockResolvedValueOnce(exchangeResult);
     const result = await service.createNewExchange('binance');
-    expect(result).toBe(exchange);
+    expect(result).toEqual(exchangeResult);
   });
 
   it('should find an exchange by id', async () => {

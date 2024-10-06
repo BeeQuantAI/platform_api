@@ -13,12 +13,15 @@ import {
   EXCHANGE_KEY_NOT_FOUND,
   EXCHANGE_KEY_STORE_ERROR,
   EXCHANGE_NOT_EXIST,
+  FAIL_TO_CREATE_EXCHANGE,
   SUCCESS,
+  UNKNOWN_ERROR,
 } from '@/common/constants/code';
 import { Result } from '@/common/dto/result.type';
 import { UserExchangeService } from '../user-exchange/user-exchange.service';
 import { ExchangeService } from '../exchange/exchange.service';
 import { UpdateExchangeKeyInput } from './dto/update-exchangeKey.input';
+import { UserExchange } from '../user-exchange/models/user-exchange.entity';
 
 @Injectable()
 export class ExchangeKeyService {
@@ -32,44 +35,87 @@ export class ExchangeKeyService {
   ) {}
 
   async createNewExchangeKey(userId: string, input: CreateExchangeKeyInput): Promise<Result> {
-    const { exchangeName, accessKey, secretKey } = input;
+    const queryRunner = this.ExchangeKeyRepository.manager.connection.createQueryRunner();
 
-    const existedExchangeKey = await this.ExchangeKeyRepository.findOneBy({ accessKey });
-    if (existedExchangeKey) {
-      return {
-        code: EXCHANGE_KEY_EXIST,
-        message: 'Exchange key already exists',
-      };
-    }
+    await queryRunner.startTransaction();
 
-    if (!this.supportedExchanges.includes(exchangeName)) {
-      return {
-        code: EXCHANGE_NOT_EXIST,
-        message: 'Current exchange is not supported',
-      };
-    }
+    try {
+      const { exchangeName, accessKey, secretKey } = input;
 
-    const verifyResult = await this.verifyExchangeKey(exchangeName, accessKey, secretKey);
-    if (!verifyResult) {
-      return {
-        code: EXCHANGE_KET_INVALID,
-        message: 'Exchange key is invalid',
-      };
-    }
+      const existedExchangeKey = await queryRunner.manager.findOne(ExchangeKey, {
+        where: { accessKey },
+      });
+      if (existedExchangeKey) {
+        return {
+          code: EXCHANGE_KEY_EXIST,
+          message: 'Exchange key already exists',
+        };
+      }
 
-    const newExchangeKey = this.ExchangeKeyRepository.create(input);
-    const result = await this.ExchangeKeyRepository.save(newExchangeKey);
-    if (result) {
-      this.establishUserExchangeRelation(userId, result.id, exchangeName);
+      if (!this.supportedExchanges.includes(exchangeName)) {
+        return {
+          code: EXCHANGE_NOT_EXIST,
+          message: 'Current exchange is not supported',
+        };
+      }
+
+      const verifyResult = await this.verifyExchangeKey(exchangeName, accessKey, secretKey);
+      if (!verifyResult) {
+        return {
+          code: EXCHANGE_KET_INVALID,
+          message: 'Exchange key is invalid',
+        };
+      }
+
+      let exchange = await this.ExchangeRepository.findByName(exchangeName);
+      if (!exchange) {
+        const newExchangeResult = await this.ExchangeRepository.createNewExchange(exchangeName);
+        if (newExchangeResult.code !== SUCCESS) {
+          await queryRunner.rollbackTransaction();
+          return {
+            code: FAIL_TO_CREATE_EXCHANGE,
+            message: 'Failed to create new exchange',
+          };
+        }
+        exchange = newExchangeResult.data;
+      }
+
+      const newExchangeKey = queryRunner.manager.create(ExchangeKey, {
+        displayName: input.displayName,
+        accessKey,
+        secretKey,
+        remarks: input.remarks,
+      });
+      const savedExchangeKey = await queryRunner.manager.save(newExchangeKey);
+
+      if (savedExchangeKey) {
+        const userExchange = queryRunner.manager.create(UserExchange, {
+          user: { id: userId },
+          exchange: exchange,
+          exchangeKey: savedExchangeKey,
+        });
+        await queryRunner.manager.save(userExchange);
+
+        await queryRunner.commitTransaction();
+        return {
+          code: SUCCESS,
+          message: 'Exchange key created successfully',
+        };
+      }
+      await queryRunner.rollbackTransaction();
       return {
-        code: SUCCESS,
-        message: 'Exchange key created successfully',
+        code: EXCHANGE_KEY_STORE_ERROR,
+        message: 'Exchange key store failed',
       };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      return {
+        code: UNKNOWN_ERROR,
+        message: `Error creating exchange key: ${error.message}`,
+      };
+    } finally {
+      await queryRunner.release();
     }
-    return {
-      code: EXCHANGE_KEY_STORE_ERROR,
-      message: 'Exchange key store failed',
-    };
   }
 
   async updateExchangeKey(input: UpdateExchangeKeyInput): Promise<Result> {
@@ -128,21 +174,47 @@ export class ExchangeKeyService {
   }
 
   async establishUserExchangeRelation(userId: string, exchangeKeyId: string, exchangeName: string) {
-    let existExchangeId: null | string = null;
-    const existExchanges = await this.UserExchangeRepository.findUserExchange(userId);
-    existExchanges.forEach((exchange) => {
-      if (exchange.name === exchangeName) {
-        existExchangeId = exchange.id;
+    try {
+      let existExchangeId: null | string = null;
+
+      const existExchanges = await this.UserExchangeRepository.findUserExchange(userId);
+
+      for (const exchange of existExchanges) {
+        if (exchange.name === exchangeName) {
+          existExchangeId = exchange.id;
+          break;
+        }
       }
-    });
 
-    if (existExchangeId) {
-      await this.UserExchangeRepository.establishRelations(userId, exchangeKeyId, existExchangeId);
-      return;
+      if (existExchangeId) {
+        await this.UserExchangeRepository.establishRelations(
+          userId,
+          exchangeKeyId,
+          existExchangeId
+        );
+        return;
+      }
+
+      const newExchange = await this.ExchangeRepository.createNewExchange(exchangeName);
+
+      if (newExchange.data) {
+        await this.UserExchangeRepository.establishRelations(
+          userId,
+          exchangeKeyId,
+          newExchange.data.id
+        );
+      } else {
+        return {
+          code: FAIL_TO_CREATE_EXCHANGE,
+          message: 'Failed to create new exchange',
+        };
+      }
+    } catch (error) {
+      return {
+        code: UNKNOWN_ERROR,
+        message: `Error establishing exchange relation: ${error.message}`,
+      };
     }
-
-    const newExchange = await this.ExchangeRepository.createNewExchange(exchangeName);
-    await this.UserExchangeRepository.establishRelations(userId, exchangeKeyId, newExchange.id);
   }
 
   async deleteExchangeKey(userId: string, exchangeKeyId: string): Promise<Result> {
