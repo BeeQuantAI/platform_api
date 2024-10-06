@@ -16,4 +16,4 @@ export class UserExchangeType {
   balances: number;
 }
 
-export const ResultForExchanges = createResults(UserExchangeType);
+export const ResultForExchanges = createResults(UserExchangeType, 'ResultForExchanges');
