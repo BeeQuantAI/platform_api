@@ -52,7 +52,10 @@ describe('ExchangeKeyValidationPipe', () => {
   });
 
   it('should throw InvalidInputException with maxLength error message if displayName is too long', () => {
-    const value = { ...validData, displayName: 'BinanceExchangeOne' };
+    const value = {
+      ...validData,
+      displayName: 'BinanceExchangeOneXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+    };
     expect(() => pipe.transform(value)).toThrow(InvalidInputException);
     expect(() => pipe.transform(value)).toThrow(DisplayErrorMsgs.MaxLength);
   });
