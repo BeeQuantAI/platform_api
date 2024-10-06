@@ -46,8 +46,8 @@ export enum ExchangeKeyErrorMsgs {
 const commonDisplayNameSchema = z
   .string()
   .min(4, { message: DisplayErrorMsgs.MinLength })
-  .max(15, { message: DisplayErrorMsgs.MaxLength })
-  .regex(/^[a-zA-Z0-9-_]+$/, {
+  .max(64, { message: DisplayErrorMsgs.MaxLength })
+  .regex(/^[a-zA-Z0-9-_ ]+$/, {
     message: DisplayErrorMsgs.Invalid,
   });
 

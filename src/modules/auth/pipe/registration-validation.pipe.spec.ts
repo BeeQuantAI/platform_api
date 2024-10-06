@@ -76,7 +76,10 @@ describe('ValidationPipe', () => {
   });
 
   it('should throw InvalidInputException with maxLength error message if displayName is not long', () => {
-    const value = { ...validData, displayName: 'seiseijia-australia' };
+    const value = {
+      ...validData,
+      displayName: 'seiseijia-australiaXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+    };
     expect(() => pipe.transform(value)).toThrow(InvalidInputException);
     expect(() => pipe.transform(value)).toThrow(DisplayErrorMsgs.MaxLength);
   });

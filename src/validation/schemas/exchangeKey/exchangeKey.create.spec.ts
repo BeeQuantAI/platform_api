@@ -20,8 +20,11 @@ describe('exchangeKeyCreateSchema', () => {
     expect(result.success).toBe(false);
   });
 
-  it('should fail when exchangeName is more than 15 characters', () => {
-    const testInput = { ...validateExchangeKeyInput, displayName: 'BinanceExchangeOne' };
+  it('should fail when exchangeName is more than 64 characters', () => {
+    const testInput = {
+      ...validateExchangeKeyInput,
+      displayName: 'BinanceExchangeOneXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+    };
     const result = exchangeKeyCreateSchema.safeParse(testInput);
     expect(result.success).toBe(false);
   });
