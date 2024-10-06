@@ -9,10 +9,12 @@ import {
   EXCHANGE_NOT_EXIST,
   SUCCESS,
   TICKER_NOT_FOUND,
+  TIMEOUT,
   UNKNOWN_ERROR,
   USER_EXCHANGE_NOT_FOUND,
 } from '@/common/constants/code';
 import { UserExchangeType } from './dto/userExchangeResult.type';
+import { fetchWithRetry } from '@/common/utils/fetchRetry';
 
 @Injectable()
 export class UserExchangeService {
@@ -69,7 +71,11 @@ export class UserExchangeService {
   }
 
   async getUserExchangesAndBalances(userId: string): Promise<IResults<UserExchangeType>> {
-    console.time('getUserExchangesAndBalances');
+    interface Balance {
+      total: { [symbol: string]: number };
+      free: { [symbol: string]: number };
+      used: { [symbol: string]: number };
+    }
 
     try {
       const userExchanges = await this.userExchangeRepository.find({
@@ -100,7 +106,8 @@ export class UserExchangeService {
           });
 
           try {
-            const balance = await exchange.fetchBalance();
+            const balance: Balance = await fetchWithRetry(() => exchange.fetchBalance());
+
             let totalUsdValue = 0;
 
             for (const symbol in balance.total) {
@@ -111,7 +118,9 @@ export class UserExchangeService {
                   usdValue = balance.total[symbol];
                 } else {
                   try {
-                    const ticker = await exchange.fetchTicker(`${symbol}/USDT`);
+                    const ticker = (await fetchWithRetry(() =>
+                      exchange.fetchTicker(`${symbol}/USDT`)
+                    )) as ccxt.Ticker;
                     usdValue = balance.total[symbol] * ticker.last;
                   } catch (error) {
                     throw { code: TICKER_NOT_FOUND, message: `No ticker found for ${symbol}/USDT` };
@@ -127,6 +136,12 @@ export class UserExchangeService {
               balances: totalUsdValue,
             } as UserExchangeType;
           } catch (error) {
+            if (error.code === TIMEOUT) {
+              throw {
+                code: TIMEOUT,
+                message: 'Request timed out',
+              };
+            }
             throw {
               code: EXCHANGE_FETCHING_ERROR,
               message: `Error fetching balance for ${exchangeName}: ${error.message}`,

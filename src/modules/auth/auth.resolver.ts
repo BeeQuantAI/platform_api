@@ -72,12 +72,12 @@ export class AuthResolver {
   }
 
   @Mutation(() => String, { description: 'Generate access token' })
-  async generateAccessToken(@Args('id') id: string): Promise<String> {
+  async generateAccessToken(@Args('id') id: string): Promise<string> {
     return await this.authService.generateAccessToken(id);
   }
 
   @Mutation(() => Boolean, { description: 'Revoke Tokens' })
-  async revokeTokens(@Context() context: any): Promise<Boolean> {
+  async revokeTokens(@Context() context: any): Promise<boolean> {
     return await this.authService.revokeTokens(context);
   }
 }
