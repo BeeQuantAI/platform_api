@@ -45,6 +45,11 @@ import { BinanceDataModule } from './modules/binance-data/binance-data.module';
       },
       context: ({ req, res }) => ({ req, res }),
       includeStacktraceInErrorResponses: false,
+      subscriptions: {
+        'subscriptions-transport-ws': {
+          path: '/graphql',
+        },
+      },
     }),
     UserModule,
     AuthModule,
