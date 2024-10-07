@@ -11,9 +11,8 @@ export class UserService {
   ) {}
 
   // create a user
-  async create(entity: DeepPartial<User>): Promise<boolean> {
-    const res = await this.userRepository.save(this.userRepository.create(entity));
-    return !!res;
+  async create(entity: DeepPartial<User>): Promise<User> {
+    return await this.userRepository.save(this.userRepository.create(entity));
   }
 
   // delete an user

@@ -32,8 +32,8 @@ export class UserResolver {
     return await this.userService.find(id);
   }
 
-  @Mutation(() => Boolean, { description: 'Create new user' })
-  async createUser(@Args('input') input: CreateUserInput): Promise<boolean> {
+  @Mutation(() => UserType, { description: 'Create new user' })
+  async createUser(@Args('input') input: CreateUserInput): Promise<UserType> {
     return await this.userService.create(input);
   }
 

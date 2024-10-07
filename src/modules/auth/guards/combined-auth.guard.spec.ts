@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CombinedAuthGuard } from './combined-auth.guard';
-import { AuthService } from '../auth.service';
+import { AuthService } from '../services/auth.service';
 import { AccessTokenGuard } from './jwt-access-auth.guard';
 import { RefreshJwtAuthGuard } from './jwt-refresh-auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../../user/user.service';
-import { TokenService } from '../token.service';
+import { TokenService } from '../services/token.service';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { CustomException } from '@/common/exceptions/custom-exception';

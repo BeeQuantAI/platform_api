@@ -5,10 +5,10 @@ import { ExecutionContext, INestApplication } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 import { CombinedAuthGuard } from '@/modules/auth/guards/combined-auth.guard';
-import { AuthService } from '@/modules/auth/auth.service';
+import { AuthService } from '@/modules/auth/services/auth.service';
 import { AccessTokenGuard } from '@/modules/auth/guards/jwt-access-auth.guard';
 import { RefreshJwtAuthGuard } from '@/modules/auth/guards/jwt-refresh-auth.guard';
-import { TokenService } from '@/modules/auth/token.service';
+import { TokenService } from '@/modules/auth/services/token.service';
 
 describe('UserResolver', () => {
   let resolver: UserResolver;

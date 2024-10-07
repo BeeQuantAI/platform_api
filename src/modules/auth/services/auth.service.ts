@@ -1,13 +1,13 @@
 import * as bcrypt from 'bcryptjs';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { CreateUserInput } from '../user/dto/new-user.input';
-import { UserService } from '../user/user.service';
+import { CreateUserInput } from '../../user/dto/new-user.input';
+import { UserService } from '../../user/user.service';
 import { Result } from '@/common/dto/result.type';
 import { EmailVerificationService } from './email.service';
 import { VERIFY_ERROR } from '@/common/constants/code';
-import { UpdatePasswordInput } from '../user/dto/update-password.input';
-import { ResetPasswordInput } from '../user/dto/reset-password.input';
+import { UpdatePasswordInput } from '../../user/dto/update-password.input';
+import { ResetPasswordInput } from '../../user/dto/reset-password.input';
 import { TokenService } from './token.service';
 import {
   ACCOUNT_EXIST,
@@ -20,6 +20,8 @@ import {
   UNKNOWN_ERROR,
   RESET_PASSWORD_ERROR,
 } from '@/common/constants/code';
+import { ThirdPartyLoginUserInput } from '@/modules/user/dto/third-party-login-user.input';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -57,9 +59,7 @@ export class AuthService {
         };
       }
 
-      const periodOneDay = 1000 * 60 * 60 * 24;
-      const periodOneWeek = periodOneDay * 7;
-      const expiresFreshToken = isStaySignedIn ? periodOneWeek : periodOneDay;
+      const expiresFreshToken = isStaySignedIn ? '7d' : '1d';
       const accessToken = this.jwtService.sign({ id: user.id }, { expiresIn: '1h' });
       const refreshToken = this.jwtService.sign({ id: user.id }, { expiresIn: expiresFreshToken });
       await this.userService.update(user.id, { refreshToken, accessToken });
@@ -342,5 +342,45 @@ export class AuthService {
       accessToken: null,
     });
     return !!updatedUser;
+  }
+
+  async loginWithThirdParty(user: ThirdPartyLoginUserInput): Promise<Result> {
+    const existingUser = await this.userService.findByEmail(user.email);
+    if (existingUser) {
+      const accessToken = this.jwtService.sign({ id: existingUser.id }, { expiresIn: '1h' });
+      const refreshToken = this.jwtService.sign({ id: existingUser.id }, { expiresIn: '7d' });
+      await this.userService.update(existingUser.id, { accessToken, refreshToken });
+      return {
+        code: SUCCESS,
+        message: 'login successful',
+        data: accessToken,
+      };
+    }
+
+    const password = randomBytes(16).toString('hex');
+
+    const newUser = await this.userService.create({
+      email: user.email,
+      displayName: `${user.firstName} ${user.lastName}`,
+      password: await bcrypt.hash(password, 10),
+      isEmailVerified: true,
+    });
+
+    if (newUser) {
+      const accessToken = this.jwtService.sign({ id: newUser.id }, { expiresIn: '1h' });
+      const refreshToken = this.jwtService.sign({ id: user.id }, { expiresIn: '7d' });
+      await this.userService.update(newUser.id, { accessToken, refreshToken });
+      await this.emailVerificationService.sendOAuthPasswordEmail(user.email, password);
+
+      return {
+        code: SUCCESS,
+        message: 'login successful',
+        data: accessToken,
+      };
+    }
+    return {
+      code: REGISTER_ERROR,
+      message: 'registration failed',
+    };
   }
 }
