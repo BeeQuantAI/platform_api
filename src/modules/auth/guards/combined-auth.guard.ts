@@ -1,10 +1,10 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { AuthService } from '@/modules/auth/auth.service';
+import { AuthService } from '@/modules/auth/services/auth.service';
 import { AccessTokenGuard } from './jwt-access-auth.guard';
 import { RefreshJwtAuthGuard } from './jwt-refresh-auth.guard';
 import { UserService } from '@/modules/user/user.service';
-import { TokenService } from '@/modules/auth/token.service';
+import { TokenService } from '@/modules/auth/services/token.service';
 import { CustomException } from '@/common/exceptions/custom-exception';
 import { ACCESS_TOKENS_NOT_SAME, BOTH_TOKENS_INVALID } from '@/common/constants/code';
 

@@ -10,8 +10,7 @@ export class EmailVerificationService {
   constructor(private jwtService: JwtService) {}
 
   generateVerificationToken(email: string): string {
-    const token = this.jwtService.sign({ email }, { expiresIn: '30m' });
-    return token;
+    return this.jwtService.sign({ email }, { expiresIn: '30m' });
   }
 
   private async sendEmail(to: string, subject: string, html: string): Promise<Result> {
@@ -89,5 +88,23 @@ export class EmailVerificationService {
       </div>
     `;
     return this.sendEmail(user.email, 'Reset Your Password', htmlContent);
+  }
+
+  async sendOAuthPasswordEmail(email: string, password: string): Promise<Result> {
+    const htmlContent = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; color: #007bff">
+      <h2 style="color: #333; text-align: center;">Your OAuth Account Password</h2>
+      <p style="color: #666;">Thank you for using BeeQuant AI! You can log in using OAuth, or alternatively, you can log in using the following temporary password:</p>
+      <div style="text-align: center;">
+        <p style="background-color: #f2f2f2; padding: 10px; border-radius: 5px; display: inline-block; font-size: 18px; color: #333;">
+          ${password}
+        </p>
+      </div>
+      <p style="color: #666; margin-top: 20px;">Please keep this password safe and do not share it with anyone.</p>
+      <p style="color: #666; margin-top: 20px;">After logging in, we recommend changing your password from Account Management.</p>
+      <p style="color: #666; margin-top: 20px;">If you did not request this account, you can safely ignore this email.</p>
+    </div>
+  `;
+    return this.sendEmail(email, 'Your OAuth Account Password', htmlContent);
   }
 }

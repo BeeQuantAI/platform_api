@@ -1,7 +1,7 @@
 import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
 import { UseFilters, UseGuards, UsePipes } from '@nestjs/common';
 import { CreateUserInput } from '../user/dto/new-user.input';
-import { AuthService } from './auth.service';
+import { AuthService } from './services/auth.service';
 import { ValidationPipe } from '@/modules/auth/pipe/registration-validation.pipe';
 import { userSchema } from '@/validation/schemas/auth/user.request';
 import { Result } from '@/common/dto/result.type';

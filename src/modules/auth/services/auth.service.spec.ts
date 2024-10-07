@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
-import { UserService } from '../user/user.service';
+import { UserService } from '../../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { EmailVerificationService } from './email.service';
-import { User } from '../user/models/user.entity';
+import { User } from '../../user/models/user.entity';
 import * as bcrypt from 'bcryptjs';
 import {
   ACCOUNT_EXIST,
@@ -19,7 +19,7 @@ import {
 import { AccessTokenGuard } from '@/modules/auth/guards/jwt-access-auth.guard';
 import { RefreshJwtAuthGuard } from '@/modules/auth/guards/jwt-refresh-auth.guard';
 import { CombinedAuthGuard } from '@/modules/auth/guards/combined-auth.guard';
-import { TokenService } from '@/modules/auth/token.service';
+import { TokenService } from '@/modules/auth/services/token.service';
 import { UserResolver } from '@/modules/user/user.resolver';
 
 describe('AuthService', () => {
