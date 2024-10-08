@@ -1,4 +1,4 @@
-import { Resolver, Query, Args, Directive } from '@nestjs/graphql';
+import { Resolver, Query, Args, Directive, Subscription } from '@nestjs/graphql';
 import { MarketOverviewService } from './market-overview.service';
 import {
   MarketOverviewResult,
@@ -9,6 +9,10 @@ import {
   CoinDetailsResponse,
 } from './dto/market-overview.types';
 import { SymbolValidationPipe, ValidSymbol } from './pipe/market-overview-validation.pipe';
+import { PubSub } from 'graphql-subscriptions';
+import { Interval } from '@nestjs/schedule';
+
+const subPub = new PubSub();
 
 @Resolver()
 export class MarketOverviewResolver {
@@ -48,5 +52,19 @@ export class MarketOverviewResolver {
   @Directive('@deprecated(reason: "Use getMarketOverview instead")')
   async getTop20Cryptocurrencies(): Promise<CoinOverviewResponse> {
     return this.marketOverviewService.getTop20Cryptocurrencies();
+  }
+
+  @Subscription(() => MarketOverviewResult, {
+    resolve: (value) => value.updateMarketOverview,
+  })
+  updateMarketOverview() {
+    return subPub.asyncIterator('updateMarketOverview');
+  }
+
+  @Interval(15000)
+  async publishUpdateMarketOverview(): Promise<MarketOverviewResponse> {
+    const updateMarketOverview = await this.marketOverviewService.getMarketOverview();
+    subPub.publish('updateMarketOverview', { updateMarketOverview });
+    return updateMarketOverview;
   }
 }
