@@ -11,13 +11,24 @@ export class BinanceDataService {
   constructor(private readonly httpService: HttpService) {}
 
   async getUiKlinesData(query: GetUiKlineDto): Promise<IResults<UiKlineType>> {
+    let params;
     const { startTime, endTime } = query;
-
-    const params = {
-      ...query,
-      startTime: new Date(startTime).getTime(),
-      endTime: new Date(endTime).getTime(),
-    };
+    if (startTime && !endTime) {
+      params = { ...query, startTime: new Date(startTime).getTime() };
+    }
+    if (!startTime && endTime) {
+      params = { ...query, endTime: new Date(endTime).getTime() };
+    }
+    if (startTime && endTime) {
+      params = {
+        ...query,
+        startTime: new Date(startTime).getTime(),
+        endTime: new Date(endTime).getTime(),
+      };
+    }
+    if (!startTime && !endTime) {
+      params = { ...query };
+    }
     try {
       const { data } = await firstValueFrom(this.httpService.get('/api/v3/uiKlines', { params }));
       const formatData = data.map((data) => {

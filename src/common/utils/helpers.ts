@@ -142,18 +142,22 @@ export const intervalSchema = z.enum(
   { message: UiKlineQueryErrorMsgs.IntervalInvalid }
 );
 
-export const timeSchema = z.union([
-  z.string().datetime({ message: UiKlineQueryErrorMsgs.TimeInvalid }),
-  z.string().length(0),
-]);
+export const timeSchema = z
+  .union([
+    z.string().datetime({ message: UiKlineQueryErrorMsgs.TimeInvalid }),
+    z.string().length(0),
+  ])
+  .optional();
 
-export const limitSchema = z.union([
-  z
-    .number()
-    .int()
-    .min(1, { message: UiKlineQueryErrorMsgs.LimitMinLength })
-    .max(1000, { message: UiKlineQueryErrorMsgs.LimitMaxLength }),
-  z.string().length(0),
-]);
+export const limitSchema = z
+  .union([
+    z
+      .number()
+      .int()
+      .min(1, { message: UiKlineQueryErrorMsgs.LimitMinLength })
+      .max(1000, { message: UiKlineQueryErrorMsgs.LimitMaxLength }),
+    z.string().length(0),
+  ])
+  .optional();
 
 export const timeZoneSchema = z.string().optional();
