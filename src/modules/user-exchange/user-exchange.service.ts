@@ -15,6 +15,7 @@ import {
 } from '@/common/constants/code';
 import { UserExchangeType } from './dto/userExchangeResult.type';
 import { fetchWithRetry } from '@/common/utils/fetchRetry';
+import { Ticker } from 'ccxt';
 
 @Injectable()
 export class UserExchangeService {
@@ -109,26 +110,36 @@ export class UserExchangeService {
             const balance: Balance = await fetchWithRetry(() => exchange.fetchBalance());
 
             let totalUsdValue = 0;
+            const symbolsToFetch: string[] = [];
 
             for (const symbol in balance.total) {
               if (balance.total[symbol] > 0) {
-                let usdValue = 0;
-
                 if (symbol === 'USDT') {
-                  usdValue = balance.total[symbol];
+                  totalUsdValue += balance.total[symbol];
                 } else {
-                  try {
-                    const ticker = (await fetchWithRetry(() =>
-                      exchange.fetchTicker(`${symbol}/USDT`)
-                    )) as ccxt.Ticker;
-                    usdValue = balance.total[symbol] * ticker.last;
-                  } catch (error) {
-                    throw { code: TICKER_NOT_FOUND, message: `No ticker found for ${symbol}/USDT` };
-                  }
+                  symbolsToFetch.push(`${symbol}/USDT`);
                 }
-                totalUsdValue += usdValue;
               }
             }
+
+            const tickers = await Promise.all(
+              symbolsToFetch.map(async (pair) => {
+                return (await fetchWithRetry(() => exchange.fetchTicker(pair))) as Ticker;
+              })
+            );
+
+            tickers.forEach((ticker, index) => {
+              if (ticker && ticker.last) {
+                const symbol = symbolsToFetch[index].split('/')[0];
+                totalUsdValue += balance.total[symbol] * ticker.last;
+              } else {
+                throw {
+                  code: TICKER_NOT_FOUND,
+                  message: `No valid ticker found for ${symbolsToFetch[index]}`,
+                };
+              }
+            });
+
             return {
               id: exchangeKeyId,
               name: exchangeName,
@@ -136,12 +147,6 @@ export class UserExchangeService {
               balances: totalUsdValue,
             } as UserExchangeType;
           } catch (error) {
-            if (error.code === TIMEOUT) {
-              throw {
-                code: TIMEOUT,
-                message: 'Request timed out',
-              };
-            }
             throw {
               code: EXCHANGE_FETCHING_ERROR,
               message: `Error fetching balance for ${exchangeName}: ${error.message}`,
