@@ -35,6 +35,10 @@ import { MarketOverviewModule } from './modules/market-overview/market-overview.
     ScheduleModule.forRoot(),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
+      subscriptions: {
+        'graphql-ws': true,
+      },
+      installSubscriptionHandlers: true,
       autoSchemaFile: 'schema.gql',
       formatError: (error) => {
         const errorMessage = {
@@ -47,6 +51,7 @@ import { MarketOverviewModule } from './modules/market-overview/market-overview.
       context: ({ req, res }) => ({ req, res }),
       includeStacktraceInErrorResponses: false,
     }),
+    ScheduleModule.forRoot(),
     UserModule,
     AuthModule,
     ExchangeKeyModule,
