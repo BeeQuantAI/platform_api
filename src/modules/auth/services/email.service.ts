@@ -60,7 +60,7 @@ export class EmailVerificationService {
 
   async sendVerificationEmail(user: User): Promise<Result> {
     // TODO: link will be updated once api server is deployed, currently this url is for local development only
-    const verificationLink = `http://localhost:3010/verify-email?email=${user.email}&token=${user.verificationToken}`;
+    const verificationLink = `http://beequantai.net/verify-email?email=${user.email}&token=${user.verificationToken}`;
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; padding: 20px; color: #007bff">
         <h2 style="color: #333; text-align: center;">Verify Your Email</h2>
@@ -76,7 +76,7 @@ export class EmailVerificationService {
 
   async sendResetPasswordEmail(user: User): Promise<Result> {
     // TODO: link will be updated once api server is deployed, currently this url is for local development only
-    const resetPasswordLink = `http://localhost:3010/reset-password?token=${user.resetPasswordToken}`;
+    const resetPasswordLink = `http://beequantai.net/reset-password?token=${user.resetPasswordToken}`;
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; padding: 20px; color: #007bff">
         <h2 style="color: #333; text-align: center;">Reset Your Password</h2>
